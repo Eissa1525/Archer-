@@ -89,7 +89,7 @@ export function Reviews() {
       <div className="reviews__head">
         <h2 className="reviews__title display">LOVED LOUDLY</h2>
         <div className="reviews__controls">
-          <span className="reviews__sample">Sample reviews</span>
+          <span className="reviews__sample">Sample reviews · not real customers</span>
           <button className="round-btn" aria-label="Previous reviews" onClick={() => nudge(-1)}>
             <Icon name="left" />
           </button>

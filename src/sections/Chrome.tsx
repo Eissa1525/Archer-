@@ -33,7 +33,7 @@ export function Loader({ onDone }: { onDone: () => void }) {
       const tl = gsap.timeline()
       tl.to(counter, {
         v: 100,
-        duration: reducedMotion ? 0.01 : 1.5,
+        duration: reducedMotion ? 0.01 : 0.9,
         ease: 'power2.inOut',
         onUpdate: () => {
           if (num.current) num.current.textContent = String(Math.round(counter.v))

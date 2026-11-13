@@ -8,7 +8,9 @@ export const brand = {
   name: 'FIRE ALLEY',
   short: 'Fire Alley',
   tagline: 'Street food, cooked loud.',
-  topbar: ['Downtown Food Alley', 'Open daily · 11AM – 1AM', 'Pickup & delivery', 'Fresh sauces made every morning'],
+  topbar: ['Concept demo · fictional restaurant', 'Open daily · 11AM – 1AM', 'Pickup & delivery', 'Fresh sauces made every morning'],
+  /** Where the "Designed by" credit links. */
+  studio: { name: 'AETHER Studio', url: 'https://aether-immersive-studio.vercel.app/' },
 }
 
 export interface Slide {

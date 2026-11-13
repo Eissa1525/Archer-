@@ -1027,8 +1027,13 @@ button {
   display: grid;
   gap: 6px;
 }
+/* cream on orange fails contrast (2.1:1), so the middle row runs on its own brown stripe */
 .marquee__row--1 {
   color: var(--cream);
+  background: var(--brown);
+  padding: 6px 0;
+  rotate: -1.2deg;
+  margin: 4px -2%;
 }
 .marquee__track {
   display: flex;
@@ -1723,4 +1728,41 @@ button {
   .hero__sticker {
     animation: none;
   }
+}
+
+/* ---------------- demo labelling (public portfolio build) ---------------- */
+.demo-chip {
+  display: inline-block;
+  margin: -12px 0 24px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1.5px dashed var(--yellow);
+  color: var(--yellow);
+  font-size: 13px;
+  font-weight: 700;
+}
+.demo-tag {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: rgba(255, 240, 220, 0.14);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  vertical-align: 2px;
+}
+.order__note {
+  margin: 18px 0 0;
+  font-size: 13px;
+  font-weight: 700;
+  opacity: 0.6;
+}
+.footer__small a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.footer__small a:hover {
+  color: var(--orange);
 }

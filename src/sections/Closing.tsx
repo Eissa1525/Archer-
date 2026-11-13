@@ -127,6 +127,7 @@ export function Order() {
               Order Delivery
             </Magnetic>
           </div>
+          <p className="order__note">Concept demo: online ordering is not active.</p>
         </div>
         <div className="order__collage" aria-hidden="true">
           {order.photos.map((p, i) => (
@@ -168,11 +169,14 @@ export function Contact() {
         </div>
         <div className="contact__info">
           <h2 className="contact__title display">COME HUNGRY</h2>
+          <p className="demo-chip">Demo details · Fire Alley is a fictional restaurant</p>
           <div className="contact__block">
             <h3>
               <Icon name="pin" size={18} /> Find us
             </h3>
-            <p>{contact.address}</p>
+            <p>
+              {contact.address} <span className="demo-tag">demo</span>
+            </p>
             <p>{contact.hours}</p>
           </div>
           <div className="contact__row">
@@ -180,13 +184,17 @@ export function Contact() {
               <h3>
                 <Icon name="mail" size={18} /> Email us
               </h3>
-              <p className="selectable">{contact.email}</p>
+              <p>
+                <span className="selectable">{contact.email}</span> <span className="demo-tag">demo</span>
+              </p>
             </div>
             <div className="contact__block">
               <h3>
                 <Icon name="phone" size={18} /> Call us
               </h3>
-              <p className="selectable">{contact.phone}</p>
+              <p>
+                <span className="selectable">{contact.phone}</span> <span className="demo-tag">demo</span>
+              </p>
             </div>
           </div>
         </div>
@@ -231,7 +239,16 @@ export function Footer() {
           <a href="#order">Order</a>
           <a href="#contact">Contact</a>
         </nav>
-        <p className="footer__small">Photos: Unsplash (Unsplash License). Address, phone and email are placeholders.</p>
+        <p className="footer__small">
+          Fire Alley is a fictional restaurant: a concept website designed and built by{' '}
+          <a href={brand.studio.url} target="_blank" rel="noopener">
+            {brand.studio.name}
+          </a>
+          . Menu, reviews, address, phone and email are illustrative only.
+        </p>
+        <p className="footer__small">
+          Photos from Unsplash (Unsplash License) · <a href="./credits.html">Photo credits</a>
+        </p>
       </div>
       <p className="footer__giant display" aria-hidden="true">
         {brand.name}

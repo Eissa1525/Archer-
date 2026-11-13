@@ -175,7 +175,7 @@ export function Hero() {
         <div className="hero__dish">
           <div className="hero__plate-wrap">
             <div className={`hero__plate hero__plate--${slide.cutout}`}>
-              <img src={slide.image} alt={slide.alt} draggable={false} />
+              <img src={slide.image} alt={slide.alt} draggable={false} fetchPriority={index === 0 ? 'high' : 'auto'} />
             </div>
           </div>
           <div className="hero__steam" aria-hidden="true">
