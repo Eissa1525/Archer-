@@ -1,0 +1,163 @@
+/* AETHER "Featured demo" card — matches the live site's Manrope / DM Mono, violet-black look. */
+.fd {
+  --fd-ink: #faf6ff;
+  --fd-mute: #b3a5c2;
+  --fd-line: rgba(250, 246, 255, 0.12);
+  --fd-accent: #c9a8ff;
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: clamp(24px, 4vw, 56px);
+  align-items: center;
+  margin: clamp(40px, 6vw, 72px) 0 28px;
+  padding: clamp(16px, 2vw, 24px);
+  border: 1px solid var(--fd-line);
+  border-radius: 20px;
+  background: linear-gradient(140deg, rgba(120, 80, 200, 0.12), rgba(10, 8, 20, 0.4));
+  color: var(--fd-ink);
+  font-family: Manrope, Arial, sans-serif;
+}
+.fd__media {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 10;
+  border-radius: 14px;
+  overflow: hidden;
+}
+.fd__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.fd__media:hover img,
+.fd__media:focus-visible img {
+  transform: scale(1.04);
+}
+.fd__live {
+  position: absolute;
+  left: 14px;
+  top: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(9, 8, 17, 0.72);
+  color: var(--fd-ink); /* the badge sits inside a link: don't inherit link colour */
+  backdrop-filter: blur(8px);
+  font: 10px/1 'DM Mono', monospace;
+  letter-spacing: 0.12em;
+}
+.fd__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #5dff9c;
+  box-shadow: 0 0 10px #5dff9c;
+}
+.fd__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 18px;
+  font: 10px/1.4 'DM Mono', monospace;
+  letter-spacing: 0.14em;
+  color: var(--fd-mute);
+}
+.fd__rule {
+  width: 28px;
+  height: 1px;
+  background: var(--fd-line);
+}
+.fd__title {
+  margin: 0;
+  font-weight: 800;
+  font-size: clamp(44px, 5.4vw, 84px);
+  line-height: 0.9;
+  letter-spacing: -0.06em;
+}
+.fd__desc {
+  max-width: 36em;
+  margin: 18px 0 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--fd-mute);
+}
+.fd__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.fd__tags li {
+  padding: 6px 10px;
+  border: 1px solid var(--fd-line);
+  border-radius: 999px;
+  font: 10px/1 'DM Mono', monospace;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.fd__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--fd-line);
+}
+.fd__price {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+}
+.fd__price-label {
+  font: 10px/1 'DM Mono', monospace;
+  letter-spacing: 0.14em;
+  color: var(--fd-mute);
+}
+.fd__price-value {
+  font-weight: 800;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+}
+.fd__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  border-radius: 999px;
+  background: var(--fd-ink);
+  color: #0b0914;
+  font: 12px/1 'DM Mono', monospace;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.fd__cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(201, 168, 255, 0.35);
+}
+.fd a:focus-visible {
+  outline: 2px solid var(--fd-accent);
+  outline-offset: 3px;
+}
+.fd__note {
+  margin: 16px 0 0;
+  font: 10px/1.5 'DM Mono', monospace;
+  letter-spacing: 0.08em;
+  color: var(--fd-mute);
+  opacity: 0.8;
+}
+@media (max-width: 860px) {
+  .fd {
+    grid-template-columns: 1fr;
+  }
+}
