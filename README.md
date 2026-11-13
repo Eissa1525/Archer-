@@ -12,8 +12,8 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:5173. Move the pointer to stir the scene, hover the glass core,
-and scroll to descend toward the water.
+Open http://localhost:5173 for the v2 "Aether Gate" hero, or http://localhost:5173/#v1
+for the original aquatic hero. Move the pointer to stir the scene, and scroll to fly through the gate.
 
 Production build:
 

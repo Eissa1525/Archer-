@@ -3,6 +3,66 @@
 Working notes for Claude (and humans) building the AETHER Studio site.
 **Current scope: the interactive 3D hero only.** Do not start other sections until the hero is signed off.
 
+## Two hero versions (both kept)
+
+| URL            | Version | Code |
+|----------------|---------|------|
+| `/` (default)  | **v2: "The Aether Gate"**, the cinematic art-direction upgrade | `src/v2/**` |
+| `/#v1`         | v1: aquatic dusk hero, unchanged | `src/AppV1.tsx`, `src/scene/**`, `src/ui/**`, `src/styles.css` |
+
+`src/main.tsx` picks the version from the hash. Keep the two `lazy(() => import(...))` calls
+**separate**: a single ternary `import()` shares one preload list and v1's CSS is then never
+injected. v2 CSS classes are all `ax-*` so both stylesheets can coexist in one bundle.
+
+## v2 art direction ("The Aether Gate")
+
+Reference studied: the "Built for the curious" clip (`dfa0b56f…mp4`, frames at 30.6s and 31.6s).
+- **Composition:** centred and symmetric. One subject, with the headline crossing it.
+- **Ribbon:** a galaxy-like elliptical band of sparks, cyan with gold, that wraps the subject,
+  passing behind at the top and in front at the bottom.
+- **Palette:** near-black teal-blue void with warm gold flowers, a complementary blue/gold scheme.
+- **Type and UI:** Instrument Serif headline, glass input and pill.
+- **Background:** a looping MP4.
+What makes it rich is *photographic footage of a subject*. We have no licensed footage and no
+generation tool, so v2 translates the principles into real-time 3D:
+
+- **Subject:** an obsidian gate (extruded arch, bevelled, gold inlay drawn on during the intro, cyan
+  rim line) standing on a plinth over a polished black mirror floor.
+- **Portal:** a parallax shader window into "another world": far horizon, nebula, stars and a
+  mirrored streak. It is darker at the base so the title can sit over it.
+- **Depth:** five or six echo arches recede behind, each growing faster than its distance, so they
+  nest into a tunnel. They are thin on purpose: thick frames merge into a black wall in perspective.
+- **Energy ribbon:** three intertwined bands of 30k sparks (27% gold) plus smooth glowing strips.
+  They use true depth, so the portal hides the back of the ribbon and the front passes over the gate.
+  The ribbon swells and pinches along its length, unfurls during the intro, parts around the
+  pointer, and speeds up with scroll and pointer energy.
+- **Light:** a thin horizon line back-lights the architecture, with a low sun at the end of the
+  corridor, faint beams, dust, sparse warm bokeh in the foreground, a cyan light that follows the
+  pointer, and a breathing violet light inside the gate.
+- **Grade:** Bloom, then ACES, then a custom split-tone `GradeEffect` (multiplicative, so black stays
+  black: indigo shadows, gold highlights, gentle S-curve), then CA, vignette and grain.
+- **Scroll (320svh, sticky):** the copy peels away in four parallax layers. The camera follows a
+  Catmull-Rom path through the gate (the portal floods cyan-violet and a DOM flash covers the
+  crossing), then down the corridor toward the sun, ending on "Chapter II".
+
+### Libraries (what is actually used)
+- **GSAP 3.15 + ScrollTrigger + SplitText** (SplitText is free since 3.13): intro timeline,
+  per-character title reveal, scroll scrub, parallax layers, Chapter II and dusk transitions.
+- **Motion for React (`motion` 14.13, MIT):** shared-layout nav hover pill (`layoutId`),
+  spring-driven magnetic buttons, `AnimatePresence` mobile menu with staggered links, `MotionConfig
+  reducedMotion="user"`.
+- **R3F / Drei / postprocessing:** scene, Environment Lightformers, MeshReflectorMaterial,
+  PerformanceMonitor, custom Effect.
+- **Not used:** React Bits, HorizonX and MotionSite were unreachable from the build session
+  (network policy), and none of them has an npm package we could verify. The npm `react-bits`
+  package is an unrelated 2022 library. Framer is not used; this stays a React/Vite project.
+
+### Where premium footage would go (not done)
+v2 has **no video and no photographic assets**. If a licensed or AI-generated loop of an original
+subject becomes available, the intended integration is: a `<video autoplay muted loop playsinline>`
+layer behind a transparent canvas (`gl.alpha = true`, no background), with the ribbon, dust and
+grade staying real-time on top. That would close most of the remaining gap to the reference.
+
 ## Stack
 
 - React 19 + TypeScript + Vite 8
@@ -95,9 +155,13 @@ There is no GPU in the cloud container, so screenshots use SwiftShader (~4 fps).
 `?capture` to the URL: it disables GSAP lag smoothing and the camera dt clamp so the intro
 settles on wall-clock time. Never ship behaviour that depends on `?capture`.
 
-Checked so far: `npm run build` clean, no console errors; desktop 1280×800 and mobile 390×844
+v1 checks: `npm run build` clean, no console errors; desktop 1280×800 and mobile 390×844
 renders; pointer parallax; scroll descent and Chapter II reveal; mobile menu toggle;
 reduced motion; no-WebGL fallback.
+v2 checks: build and typecheck clean, no console errors; 1280×720, 412×915 and 360×800 renders;
+pointer parallax; four scroll positions; nav pill; Tab order; menu focus and Escape; no overflow at
+360px; reduced motion; no-WebGL fallback; v1 still renders at `#v1`. In SwiftShader, v2 renders at
+about the same cost as v1 (75 vs 71 frames in 12s at 640×360). This is a relative measure only.
 **Not yet checked:** real-GPU frame rate on actual phones and laptops, Safari/iOS, Firefox.
 
 ## Future tasks

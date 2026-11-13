@@ -1,8 +1,9 @@
+import './v2.css'
 import { lazy, Suspense, useCallback, useMemo, useState, useSyncExternalStore } from 'react'
-import { Overlay } from './ui/Overlay'
-import { hasWebGL, useQuality } from './hooks/useQuality'
+import { Overlay } from './Overlay'
+import { hasWebGL, useQuality } from '../hooks/useQuality'
 
-// Keep three.js out of the critical path so the type & veil paint immediately.
+// three.js + the scene load after the type and veil have painted.
 const Experience = lazy(() => import('./scene/Experience').then((m) => ({ default: m.Experience })))
 
 function subscribeResize(cb: () => void) {
@@ -11,7 +12,7 @@ function subscribeResize(cb: () => void) {
 }
 const getLayout = () => (window.innerWidth / window.innerHeight < 0.9 ? 'tall' : 'wide')
 
-export default function App() {
+export default function AppV2() {
   const quality = useQuality()
   const layout = useSyncExternalStore(subscribeResize, getLayout, () => 'wide' as const) as 'wide' | 'tall'
   const webgl = useMemo(hasWebGL, [])
@@ -20,16 +21,16 @@ export default function App() {
 
   return (
     <>
-      <div className="stage" aria-hidden="true">
+      <div className="ax-stage" aria-hidden="true">
         {webgl ? (
           <Suspense fallback={null}>
             <Experience quality={quality} layout={layout} onReady={onReady} />
           </Suspense>
         ) : (
-          <div className="no-webgl" />
+          <div className="ax-fallback" />
         )}
       </div>
-      <Overlay ready={ready} reducedMotion={quality.reducedMotion} isMobile={quality.isMobile} webgl={webgl} />
+      <Overlay ready={ready} reducedMotion={quality.reducedMotion} webgl={webgl} />
     </>
   )
 }
