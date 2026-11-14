@@ -1,22 +1,19 @@
-# Fire Alley — Street Food Website
+# Restaurant Website: Fire Alley demo
 
-A bold, animated street-food site: smash burgers, stone-fired pizza, street tacos and wings.
-Layout and energy inspired by the "Hotbite" Framer template. All code, copy and brand are
-original, and every photo is from Unsplash (see `public/img/CREDITS.md`).
-
-## Run it
+An animated, client-ready restaurant website (React + Vite, GSAP, Motion, Lenis). The bundled
+restaurant, **Fire Alley**, is fictional and serves as the demo.
 
 ```bash
 npm install
 npm run dev       # http://localhost:5173
-npm run build     # typecheck + production build → dist/
-npm run preview   # http://localhost:4173
+npm test          # unit tests
+npm run build     # production build → dist/
 ```
 
+- **Swap in a real restaurant:** edit `src/config/site.config.ts` (or start from
+  `clients/_template.config.ts`) and set `mode: 'client'`.
+- **Online ordering, payments, hosting, costs:** see **[HANDOVER.md](./HANDOVER.md)** and
+  **[server/README.md](./server/README.md)**.
+- **Photos:** Unsplash License, see `public/img/CREDITS.md`.
+
 Requires Node 20.19+.
-
-## Change the content
-
-Everything lives in **`src/data.ts`**: brand name, hero slides, menu and prices, reviews, gallery,
-contact details. **The address, phone, email and reviews are placeholders.** Replace them before
-going live. To change a photo, drop a `.webp` into `public/img/` and update its path in `data.ts`.

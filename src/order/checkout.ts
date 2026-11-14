@@ -13,10 +13,10 @@ export interface CustomerForm {
   addressDetails: string
   notes: string
   /** Honeypot: real people never see or fill this field. */
-  company: string
+  hp: string
 }
 
-export const emptyForm: CustomerForm = { name: '', phone: '', email: '', address: '', addressDetails: '', notes: '', company: '' }
+export const emptyForm: CustomerForm = { name: '', phone: '', email: '', address: '', addressDetails: '', notes: '', hp: '' }
 
 export type FormErrors = Partial<Record<keyof CustomerForm, string>>
 
@@ -57,7 +57,7 @@ export interface OrderPayload {
   returnUrl: string
   createdAt: string
   /** Honeypot copy, so the server can drop spam. */
-  company?: string
+  hp?: string
 }
 
 export function buildPayload(cfg: SiteConfig, lines: CartLine[], fulfillment: Fulfillment, f: CustomerForm): OrderPayload {
@@ -88,7 +88,7 @@ export function buildPayload(cfg: SiteConfig, lines: CartLine[], fulfillment: Fu
     payment: cfg.ordering.payment.type,
     returnUrl: typeof window !== 'undefined' ? `${location.origin}${location.pathname}` : '',
     createdAt: new Date().toISOString(),
-    ...(f.company ? { company: f.company } : {}),
+    ...(f.hp ? { hp: f.hp } : {}),
   }
 }
 

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent as ReactKeyboardEvent } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { isDemo, money, site, telHref } from '../config'
+import { money, site, telHref } from '../config'
 import type { MenuItem } from '../config'
 import { Icon } from '../lib/Icon'
 import { scroller } from '../lib/anim'
@@ -12,6 +12,8 @@ type Step = 'menu' | 'cart' | 'details' | 'done'
 type Done = Exclude<SubmitResult, { kind: 'error' } | { kind: 'redirect' }> | { kind: 'paid'; reference?: string } | { kind: 'cancelled' }
 
 const ord = site.ordering
+/** The demo provider never sends anything; the UI must always say so. */
+const demoOrdering = ord.provider.type === 'demo'
 const orderable = site.menu.categories
   .map((c) => ({ ...c, items: c.items.filter((i) => i.orderable !== false) }))
   .filter((c) => c.items.length > 0)
@@ -97,13 +99,23 @@ export function OrderPanel() {
       setStep('menu')
     }
   }
+  const closeRef = useRef(close)
+  closeRef.current = close
+
+  // Escape closes from anywhere (focus can land on <body> when a step's content is replaced)
+  useEffect(() => {
+    if (!o.isOpen) return
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && closeRef.current()
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [o.isOpen])
+
+  // announce each step by moving focus to the heading
+  useEffect(() => {
+    if (o.isOpen) heading.current?.focus()
+  }, [step, o.isOpen])
 
   const onKeyDown = (e: ReactKeyboardEvent) => {
-    if (e.key === 'Escape') {
-      e.stopPropagation()
-      close()
-      return
-    }
     if (e.key !== 'Tab' || !panel.current) return
     // keep keyboard focus inside the dialog
     const f = panel.current.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), input:not([tabindex="-1"]), textarea, select, [tabindex="0"]')
@@ -148,9 +160,12 @@ export function OrderPanel() {
               </button>
             </header>
 
-            {isDemo && step !== 'done' && (
+            {demoOrdering && step !== 'done' && (
               <p className="op__demo" role="note">
-                <Icon name="alert" size={16} /> Demo mode: try the full checkout. Orders are <strong>not sent</strong> and no payment is taken.
+                <Icon name="alert" size={16} />
+                <span>
+                  Demo mode: try the full checkout. Orders are <strong>not sent</strong> and no payment is taken.
+                </span>
               </p>
             )}
 
@@ -593,8 +608,8 @@ function DetailsStep({ onDone }: { onDone: (d: Done) => void }) {
         })}
         {/* honeypot: hidden from people and screen readers; bots fill it */}
         <div className="op__hp" aria-hidden="true">
-          <label htmlFor="op-field-company">Company</label>
-          <input id="op-field-company" tabIndex={-1} autoComplete="off" value={form.company} onChange={(e) => setForm((s) => ({ ...s, company: e.target.value }))} />
+          <label htmlFor="op-field-hp">Leave this empty</label>
+          <input id="op-field-hp" name="hp_check" tabIndex={-1} autoComplete="off" value={form.hp} onChange={(e) => setForm((s) => ({ ...s, hp: e.target.value }))} />
         </div>
       </div>
 
@@ -620,7 +635,7 @@ function DetailsStep({ onDone }: { onDone: (d: Done) => void }) {
           ? 'Sending order…'
           : status === 'redirecting'
             ? 'Opening secure payment…'
-            : `${isDemo ? 'Place demo order' : ord.payment.type === 'checkout-redirect' ? 'Continue to payment' : 'Place order'} · ${money(totals.total)}`}
+            : `${demoOrdering ? 'Place demo order' : ord.payment.type === 'checkout-redirect' ? 'Continue to payment' : 'Place order'} · ${money(totals.total)}`}
       </button>
     </form>
   )

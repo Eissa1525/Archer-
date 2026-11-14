@@ -1,8 +1,7 @@
 /// <reference types="vitest/config" />
-import { defineConfig, type Plugin } from 'vite'
+import { defineConfig, runnerImport, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'node:path'
-import { pathToFileURL } from 'node:url'
 import type { SiteConfig } from './src/config/types.ts'
 import { validateConfig } from './src/config/validate.ts'
 
@@ -19,7 +18,8 @@ function restaurantConfig(): Plugin {
   return {
     name: 'restaurant-config',
     async buildStart() {
-      site = (await import(/* @vite-ignore */ pathToFileURL(configFile).href + `?t=${Date.now()}`)).default as SiteConfig
+      // load through Vite (not Node's import) so the config can use extensionless TS imports
+      site = (await runnerImport<{ default: SiteConfig }>(configFile)).module.default
       const { errors, warnings } = validateConfig(site)
       for (const w of warnings) this.warn(`[site config] ${w}`)
       if (errors.length) {

@@ -1,4 +1,4 @@
-import { useRef, type MouseEvent, type ReactNode } from 'react'
+import { useRef, type CSSProperties, type MouseEvent, type ReactNode } from 'react'
 import { motion, useMotionValue, useSpring } from 'motion/react'
 import { gsap, revealTitle, revealUp, reducedMotion, SplitText, useSectionAnim } from '../lib/anim'
 import { Icon } from '../lib/Icon'
@@ -410,7 +410,12 @@ export function Footer() {
           </p>
         )}
       </div>
-      <p className="footer__giant display" aria-hidden="true">
+      <p
+        className="footer__giant display"
+        aria-hidden="true"
+        // longer client names shrink to fit; names up to 10 characters keep the original size
+        style={site.business.name.length > 10 ? ({ '--chars': site.business.name.length } as CSSProperties) : undefined}
+      >
         {site.business.name}
       </p>
     </footer>

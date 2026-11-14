@@ -1937,6 +1937,7 @@ button {
   position: relative;
 }
 .op__demo {
+  line-height: 1.4;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -2378,4 +2379,7 @@ button {
     grid-column: 1;
     justify-self: start;
   }
+}
+.footer__giant[style*='--chars'] {
+  font-size: min(clamp(90px, 21vw, 360px), calc(205vw / var(--chars)));
 }
