@@ -1,9 +1,8 @@
 # AETHER Restaurant Website Template: Single Website Commercial Licence
 
-> **DRAFT FOR REVIEW. NOT LEGAL ADVICE.** Fill in the fields in [square brackets] and have the
-> text reviewed (ideally by a lawyer in your province) before selling.
+> **DRAFT FOR REVIEW. NOT LEGAL ADVICE.** This text has not yet been reviewed by a lawyer.
 
-**Licensor:** [LICENSOR LEGAL NAME], operating as AETHER Studio ("we", "us")
+**Licensor:** Eissa ALDALI ("we", "us")
 **Product:** AETHER Restaurant Website Template, version 1.x, including its source code, design,
 documentation and placeholder images (the "Template")
 **Licensee:** the person or business that bought a licence ("you")
@@ -68,8 +67,8 @@ Template. Websites already delivered to end clients in compliance with this lice
 operate.
 
 ## 9. General
-This licence is governed by the laws of the Province of [PROVINCE] and the federal laws of Canada
+This licence is governed by the laws of the Province of Ontario and the federal laws of Canada
 that apply there. If any part is found unenforceable, the rest remains in effect. This is the
 entire agreement about the Template, unless a separate written agreement says otherwise.
 
-Copyright © [YEAR] [LICENSOR LEGAL NAME]. All rights reserved except as granted above.
+Copyright © 2026 Eissa ALDALI. All rights reserved except as granted above.

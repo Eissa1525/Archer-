@@ -54,5 +54,7 @@ console.log(`
   files    ${exported} (of ${files.length} in git; internal files excluded via .gitattributes)
   size     ${(statSync(zip).size / 1e6).toFixed(2)} MB
   sha256   ${sha}`)
-if (blanks.length || /DRAFT FOR REVIEW/.test(licence))
-  console.log(`\n⚠ NOT READY FOR SALE: LICENSE.md is still a draft${blanks.length ? ` with blanks ${blanks.join(', ')}` : ''}.\n  Fill them in, remove the DRAFT notice after review, commit, and run npm run package again.`)
+if (blanks.length)
+  console.log(`\n⚠ NOT READY FOR SALE: LICENSE.md still has blanks ${blanks.join(', ')}.\n  Fill them in, commit, and run npm run package again.`)
+else if (/DRAFT FOR REVIEW/.test(licence))
+  console.log(`\n⚠ LICENCE STILL MARKED DRAFT: buyers will see "DRAFT FOR REVIEW" in LICENSE.md.\n  After review, remove that notice, commit, and run npm run package again.`)

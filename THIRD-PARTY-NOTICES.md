@@ -10,7 +10,7 @@ informational. The licence texts of the npm packages are in `node_modules/<packa
 | react, react-dom | 19.3.1 | MIT |
 | motion (Motion for React) | 14.13.0 | MIT |
 | lenis | 1.3.27 | MIT |
-| gsap (incl. ScrollTrigger, SplitText) | 3.15.1 | GSAP "Standard no-charge" licence, https://gsap.com/standard-license. Free, including commercial use; read the terms for the few restrictions |
+| gsap (incl. ScrollTrigger, SplitText) | 3.15.1 | GSAP "Standard no-charge" licence, https://gsap.com/standard-license. Free, including commercial use and the former bonus plugins. Read the terms: they restrict use in visual, no-code animation builders that compete with Webflow. gsap is installed from npm by you, not included in this package |
 
 ## Development tools (not shipped)
 | Package | Licence |

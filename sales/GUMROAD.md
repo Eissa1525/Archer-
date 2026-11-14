@@ -58,8 +58,9 @@ or changes after delivery.
 5. Follow `INSTALL.md` to create your restaurant's config, add photos, build and publish.
 
 ## Before publishing the listing
-- [ ] Fill in `[LICENSOR LEGAL NAME]`, `[PROVINCE]` and `[YEAR]` in `LICENSE.md`, have it reviewed,
-      remove the DRAFT notice, then run `npm run package` again (no "NOT READY" warning).
+- [x] Licensor details filled in `LICENSE.md` (Eissa ALDALI, Ontario, 2026).
+- [ ] Have `LICENSE.md` reviewed, remove the DRAFT notice, then run `npm run package` again (no
+      warning at the end).
 - [ ] Replace `[PUBLIC DEMO URL]` with the public demo link.
 - [ ] Check Gumroad's current fees. On a $10 add-on, platform and payment fees take a noticeable
       share.
