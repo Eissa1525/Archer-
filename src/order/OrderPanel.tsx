@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent as ReactKeyboardEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { money, site, telHref } from '../config'
 import type { MenuItem } from '../config'
@@ -343,7 +343,9 @@ function Customize({ item, onCancel, onAdded }: { item: MenuItem; onCancel: () =
       return { ...s, [gid]: [...cur, cid] }
     })
 
-  const submit = (e: FormEvent) => {
+  // Buttons call this directly (type="button") so it also works inside sandboxed iframes without
+  // `allow-forms`, where browsers silently cancel form submission. Enter still submits the form.
+  const submit = (e: FormEvent | MouseEvent) => {
     e.preventDefault()
     setTried(true)
     if (errs.length) return
@@ -353,6 +355,8 @@ function Customize({ item, onCancel, onAdded }: { item: MenuItem; onCancel: () =
 
   return (
     <form className="op__custom" onSubmit={submit}>
+      {/* keeps Enter-to-submit working; the visible button calls submit directly */}
+      <button type="submit" hidden aria-hidden="true" tabIndex={-1} />
       <button type="button" className="op__back" onClick={onCancel}>
         <Icon name="left" size={16} /> Back to menu
       </button>
@@ -402,7 +406,7 @@ function Customize({ item, onCancel, onAdded }: { item: MenuItem; onCancel: () =
       )}
       <div className="op__custom-foot">
         <Qty value={qty} onChange={setQty} label={item.name} />
-        <button type="submit" className="btn btn--orange">
+        <button type="button" className="btn btn--orange" onClick={submit}>
           Add to order · {money(price)}
         </button>
       </div>
@@ -553,7 +557,7 @@ function DetailsStep({ onDone }: { onDone: (d: Done) => void }) {
 
   const fields = useMemo(() => FIELDS.filter((f) => !f.deliveryOnly || fulfillment === 'delivery'), [fulfillment])
 
-  const submit = async (e: FormEvent) => {
+  const submit = async (e: FormEvent | MouseEvent) => {
     e.preventDefault()
     setFailure('')
     const errs = validateCustomer(site, form, fulfillment)
@@ -577,6 +581,8 @@ function DetailsStep({ onDone }: { onDone: (d: Done) => void }) {
 
   return (
     <form ref={formRef} className="op__form" onSubmit={submit} noValidate>
+      {/* keeps Enter-to-submit working; the visible button calls submit directly */}
+      <button type="submit" hidden aria-hidden="true" tabIndex={-1} />
       <div className="op__fields">
         {fields.map((f) => {
           const id = `op-field-${f.key}`
@@ -630,7 +636,7 @@ function DetailsStep({ onDone }: { onDone: (d: Done) => void }) {
         </div>
       )}
 
-      <button type="submit" className="btn btn--orange op__submit" disabled={status !== 'idle'}>
+      <button type="button" className="btn btn--orange op__submit" disabled={status !== 'idle'} onClick={submit}>
         {status === 'sending'
           ? 'Sending order…'
           : status === 'redirecting'
