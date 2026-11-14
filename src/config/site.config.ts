@@ -9,7 +9,7 @@
  *    2. set `mode: 'client'`,
  *    3. run `npm run build` — it refuses to build while demo/placeholder data remains.
  *
- *  See HANDOVER.md for the full guide.
+ *  See docs/CLIENT-GUIDE.md for the full guide.
  */
 import type { SiteConfig } from './types'
 
@@ -26,6 +26,31 @@ const config: SiteConfig = {
     seoTitle: 'Fire Alley — Street Food, Cooked Loud',
     seoDescription: 'Fire Alley — smash burgers, stone-fired pizza, street tacos and wings. Cooked loud, served hot.',
     noindex: true,
+  },
+
+  theme: {
+    colors: {
+      brown: '#3b1200',
+      brownDeep: '#2a0c00',
+      brownSoft: '#5a2207',
+      orange: '#ff8a00',
+      orangeHot: '#ff5e1a',
+      yellow: '#ffc533',
+      cream: '#fff0dc',
+      cream2: '#fbe2c0',
+      ink: '#2a0c00',
+      chili: '#e8381e',
+      orangeShadow: '#c25f00',
+      creamShadow: '#d9b98f',
+      brownShadow: '#160600',
+      heroGlow: '#5a1d03',
+    },
+    fonts: {
+      display: "'Londrina Solid', 'Arial Black', Impact, sans-serif",
+      body: "'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif",
+      googleFontsUrl:
+        'https://fonts.googleapis.com/css2?family=Londrina+Solid:wght@300;400;900&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap',
+    },
   },
 
   locale: { locale: 'en-CA', currency: 'CAD' },

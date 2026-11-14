@@ -152,6 +152,48 @@ export interface OrderingConfig {
   maxQuantity: number
 }
 
+/* ----------------------------- theme ----------------------------- */
+
+/** Brand colours as #rrggbb. Each maps to a CSS variable used by the whole design. */
+export interface ThemeColors {
+  /** main dark background */
+  brown: string
+  brownDeep: string
+  brownSoft: string
+  /** primary accent: buttons, headings, plates */
+  orange: string
+  orangeHot: string
+  /** secondary accent: second headline line, prices */
+  yellow: string
+  /** light section background */
+  cream: string
+  cream2: string
+  /** text on light backgrounds */
+  ink: string
+  /** spicy markers */
+  chili: string
+  /** solid "3D" shadow under orange buttons */
+  orangeShadow: string
+  creamShadow: string
+  brownShadow: string
+  /** warm glow behind the hero dish */
+  heroGlow: string
+}
+
+export interface Theme {
+  colors: ThemeColors
+  fonts: {
+    /** CSS font stack for big headings, e.g. "'Londrina Solid', 'Arial Black', sans-serif" */
+    display: string
+    /** CSS font stack for body text */
+    body: string
+    /** Google Fonts stylesheet URL loading both fonts, or null to use system fonts only. */
+    googleFontsUrl: string | null
+  }
+  /** Path to a favicon in /public (e.g. './favicon.png'). Omit to generate one from the colours. */
+  favicon?: string
+}
+
 /* ----------------------------- site ----------------------------- */
 
 export interface SiteConfig {
@@ -173,6 +215,9 @@ export interface SiteConfig {
     /** true = ask search engines not to index (always true in demo mode). */
     noindex?: boolean
   }
+
+  /** Colours, fonts and favicon. The default is the Fire Alley look. */
+  theme: Theme
 
   locale: {
     /** BCP-47, e.g. 'en-CA' */

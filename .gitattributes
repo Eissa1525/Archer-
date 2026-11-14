@@ -1,0 +1,2 @@
+# Files kept in the repository but left out of the client source package (npm run package)
+CLAUDE.md export-ignore

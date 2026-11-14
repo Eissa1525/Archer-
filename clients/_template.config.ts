@@ -25,6 +25,14 @@ const config: SiteConfig = {
     noindex: false,
   },
 
+  // Brand colours and fonts (defaults: the Fire Alley look). See docs/CLIENT-GUIDE.md §2.
+  theme: {
+    ...demo.theme,
+    colors: { ...demo.theme.colors /* , orange: '#e4572e', brown: '#1f1a17', … */ },
+    // fonts: { display: "'Bebas Neue', Impact, sans-serif", body: "'Inter', system-ui, sans-serif",
+    //          googleFontsUrl: 'https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;700&display=swap' },
+  },
+
   locale: { locale: 'en-CA', currency: 'CAD' },
 
   contact: {

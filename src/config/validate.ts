@@ -1,4 +1,5 @@
 import type { SiteConfig } from './types'
+import { FONT_STACK, HEX } from './theme'
 
 export interface ValidationResult {
   errors: string[]
@@ -50,6 +51,20 @@ export function validateConfig(c: SiteConfig): ValidationResult {
   for (const g of c.menu.optionGroups) {
     const defaults = g.choices.filter((ch) => ch.default).length
     if (g.type === 'single' && defaults > 1) errors.push(`menu: option group "${g.id}" has more than one default`)
+  }
+
+  // ---- theme (both modes): values are injected into CSS, so they must be strictly well-formed
+  for (const [k, v] of Object.entries(c.theme.colors)) if (!HEX.test(v)) errors.push(`theme.colors.${k} must be a #rrggbb colour (got "${v}")`)
+  for (const k of ['display', 'body'] as const) if (!FONT_STACK.test(c.theme.fonts[k])) errors.push(`theme.fonts.${k} contains characters that are not allowed in a font list`)
+  if (c.theme.fonts.googleFontsUrl && !c.theme.fonts.googleFontsUrl.startsWith('https://fonts.googleapis.com/'))
+    errors.push('theme.fonts.googleFontsUrl must be a https://fonts.googleapis.com/ link (or null)')
+  if (c.theme.favicon && !/^(\.\/|\/)?[\w\-./]+\.(png|svg|ico|webp)$/.test(c.theme.favicon)) errors.push('theme.favicon must be a path like ./favicon.png')
+
+  // ---- SAFETY: a demo must never be able to send a real order or take a real payment
+  if (c.mode === 'demo') {
+    if (c.ordering.provider.type !== 'demo' && c.ordering.provider.type !== 'disabled')
+      errors.push(`demo mode only allows ordering.provider "demo" or "disabled" (got "${c.ordering.provider.type}") — switch to mode: 'client' for real ordering`)
+    if (c.ordering.payment.type !== 'pay-on-collection') errors.push('demo mode cannot use online payment (ordering.payment must be "pay-on-collection")')
   }
 
   // ---- ordering configuration (both modes)

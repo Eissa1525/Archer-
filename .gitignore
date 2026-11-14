@@ -1,5 +1,14 @@
 node_modules
 dist
+release
 *.local
 *.tsbuildinfo
 .DS_Store
+
+# secrets: never commit
+.env
+.env.*
+!.env.example
+.dev.vars
+*.pem
+*.p12

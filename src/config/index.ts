@@ -4,7 +4,17 @@ import type { MenuItem, OptionGroup, SiteConfig } from './types'
 
 export type * from './types'
 
-export const site: SiteConfig = config
+/**
+ * Demo safety net (the build already refuses such configs): in demo mode, ordering is forced to the
+ * demo provider and online payment is switched off, so a demo can never send an order or take money.
+ */
+export function withDemoSafety(c: SiteConfig): SiteConfig {
+  if (c.mode !== 'demo') return c
+  const provider = c.ordering.provider.type === 'disabled' ? c.ordering.provider : ({ type: 'demo' } as const)
+  return { ...c, ordering: { ...c.ordering, provider, payment: { type: 'pay-on-collection', note: c.ordering.payment.note } } }
+}
+
+export const site: SiteConfig = withDemoSafety(config)
 export const isDemo = site.mode === 'demo'
 
 /* ----------------------------- money ----------------------------- */

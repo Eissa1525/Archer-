@@ -101,7 +101,8 @@ export type SubmitResult =
 
 export async function submitOrder(cfg: SiteConfig, payload: OrderPayload, fetchImpl: typeof fetch = fetch): Promise<SubmitResult> {
   const p = cfg.ordering.provider
-  if (p.type === 'demo') return { kind: 'demo' }
+  // demo sites never send anything, whatever the provider says
+  if (cfg.mode === 'demo' || p.type === 'demo') return { kind: 'demo' }
   if (p.type !== 'endpoint') return { kind: 'error', message: 'Online ordering is not set up for this restaurant.' }
 
   const ctrl = new AbortController()
@@ -158,9 +159,9 @@ const SESSION_ID = /^cs_(test_|live_)?[A-Za-z0-9]{10,200}$/
  * The URL proves nothing, so success is confirmed server-side (statusUrl → Stripe) before it is shown.
  * Returns null when the page was not reached from a payment redirect, or payments are not enabled.
  */
-export async function resolvePaymentReturn(cfg: Pick<SiteConfig, 'ordering'>, search: string, fetchImpl: typeof fetch = fetch): Promise<PaymentReturn | null> {
+export async function resolvePaymentReturn(cfg: Pick<SiteConfig, 'ordering' | 'mode'>, search: string, fetchImpl: typeof fetch = fetch): Promise<PaymentReturn | null> {
   const payment = cfg.ordering.payment
-  if (payment.type !== 'checkout-redirect') return null
+  if (cfg.mode === 'demo' || payment.type !== 'checkout-redirect') return null
   const q = new URLSearchParams(search)
   const status = q.get('order')
   if (status === 'cancelled') return { kind: 'cancelled' }

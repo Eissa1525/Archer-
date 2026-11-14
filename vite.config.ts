@@ -4,6 +4,7 @@ import react from '@vitejs/plugin-react'
 import path from 'node:path'
 import type { SiteConfig } from './src/config/types.ts'
 import { validateConfig } from './src/config/validate.ts'
+import { faviconHref, themeCss } from './src/config/theme.ts'
 
 /**
  * Which restaurant to build. Defaults to the Fire Alley demo.
@@ -23,13 +24,17 @@ function restaurantConfig(): Plugin {
       const { errors, warnings } = validateConfig(site)
       for (const w of warnings) this.warn(`[site config] ${w}`)
       if (errors.length) {
-        const msg = `\n[site config] ${path.relative(process.cwd(), configFile)} (mode: ${site.mode}) has problems:\n  - ${errors.join('\n  - ')}\n`
-        // client mode must never ship placeholder or broken business data
-        if (site.mode === 'client') this.error(msg)
-        else this.warn(msg)
+        // never build a broken site, a client site with placeholder data, or a demo that could take real orders
+        this.error(`\n[site config] ${path.relative(process.cwd(), configFile)} (mode: ${site.mode}) has problems:\n  - ${errors.join('\n  - ')}\n`)
       }
     },
-    transformIndexHtml(html) {
+    // 'pre': fill the placeholders before Vite parses the HTML (its CSS minifier reads the inline <style>)
+    transformIndexHtml: { order: 'pre', handler: (html) => fillHead(html, site) },
+  }
+}
+
+function fillHead(html: string, site: SiteConfig): string {
+  {
       const b = site.business
       const noindex = site.mode === 'demo' || b.noindex
       return html
@@ -38,7 +43,15 @@ function restaurantConfig(): Plugin {
         .replace('%LANG%', escape(site.locale.locale.split('-')[0]))
         .replace('%HERO_IMAGE%', escape(site.hero.slides[0]?.image ?? ''))
         .replace('%ROBOTS%', noindex ? '<meta name="robots" content="noindex" />' : '')
-    },
+        .replace('%THEME_COLOR%', escape(site.theme.colors.brown))
+        .replace('%FAVICON%', escape(faviconHref(site.theme)))
+        .replace('%THEME_CSS%', themeCss(site.theme))
+        .replace(
+          '%FONTS%',
+          site.theme.fonts.googleFontsUrl
+            ? `<link rel="preconnect" href="https://fonts.googleapis.com" />\n    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />\n    <link href="${escape(site.theme.fonts.googleFontsUrl)}" rel="stylesheet" />`
+            : '',
+        )
   }
 }
 

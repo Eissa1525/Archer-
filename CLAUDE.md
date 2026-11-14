@@ -1,6 +1,8 @@
-# Fire Alley — notes for Claude
+# AETHER Restaurant Template (Fire Alley demo): notes for Claude
 
-Branch `claude/street-food-site` is a standalone project (separate from the AETHER hero branches).
+Branch `claude/restaurant-template` is the sellable template. `claude/fire-alley-client-ready` is the
+reviewed single-site version, and `claude/street-food-site` is the original live demo. This file is
+export-ignored: it is not part of the client package.
 
 ## Rules
 - **Never change the design or animations.** The look is signed off. New features are config,
@@ -9,6 +11,14 @@ Branch `claude/street-food-site` is a standalone project (separate from the AETH
 - **Inspiration, not a copy.** The section flow and energy follow the Hotbite Framer template.
   Never reuse its images, text, logo or name.
 - Photos: Unsplash License only. Keep `public/img/CREDITS.md` and `public/credits.html` in sync.
+- **Demo safety is non-negotiable:** demo mode may only use the `demo`/`disabled` providers and
+  `pay-on-collection`. This is enforced in `validate.ts` (fatal), `withDemoSafety` (browser),
+  `submitOrder`, and every server handler (403). Keep all four layers.
+- **Branding:** colours and fonts come from `site.theme` and are injected as `html:root` CSS
+  variables at build time (`src/config/theme.ts`). Never hardcode a brand colour in CSS; add a
+  token.
+- **No secrets, no customer data** in the repo. `npm run scan:secrets` must pass, and test strings
+  that look like keys must be assembled at runtime.
 - **All business content lives in `src/config/site.config.ts`** (types in `src/config/types.ts`).
   Components read `site` from `src/config`. Never hardcode business text, prices or links in a
   component.
@@ -28,6 +38,9 @@ Branch `claude/street-food-site` is a standalone project (separate from the AETH
   and host adapters.
 - `clients/_template.config.ts`: starting point for a real client. `SITE_CONFIG=<file>` selects
   the config at build time (Vite alias `@site-config`).
+- `scripts/`: `check-config`, `new-client`, `scan-secrets`, `package` (git archive zip in
+  `release/`).
+- `docs/`: CLIENT-GUIDE, DEPLOYMENT, ACTIVATION-CHECKLIST, HANDOVER-PROCESS.
 - `tests/`: vitest (`npm test`). `tests/fixtures/` holds a client-mode config and a Node entry
   used for local end-to-end runs.
 

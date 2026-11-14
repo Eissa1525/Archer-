@@ -1,7 +1,9 @@
 {
-  "name": "fire-alley-street-food",
+  "name": "aether-restaurant-template",
   "private": true,
-  "version": "0.1.0",
+  "version": "1.0.0",
+  "description": "Animated, configurable restaurant website with optional online ordering and Stripe payments.",
+  "license": "UNLICENSED",
   "type": "module",
   "engines": {
     "node": ">=20.19"
@@ -11,7 +13,11 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "typecheck": "tsc -b",
-    "test": "vitest run"
+    "test": "vitest run",
+    "check": "node scripts/check-config.mjs",
+    "new-client": "node scripts/new-client.mjs",
+    "scan:secrets": "node scripts/scan-secrets.mjs",
+    "package": "node scripts/package.mjs"
   },
   "dependencies": {
     "gsap": "^3.15.1",

@@ -10,6 +10,11 @@
   --cream-2: #fbe2c0;
   --ink: #2a0c00;
   --chili: #e8381e;
+  /* derived shades (also overridable from site.config.ts → theme.colors) */
+  --orange-shadow: #c25f00;
+  --cream-shadow: #d9b98f;
+  --brown-shadow: #160600;
+  --hero-glow: #5a1d03;
   --display: 'Londrina Solid', 'Arial Black', Impact, sans-serif;
   --body: 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --gutter: max(18px, min(5vw, 72px));
@@ -153,20 +158,20 @@ button {
 .btn--orange {
   background: var(--orange);
   color: var(--brown);
-  box-shadow: 0 6px 0 #c25f00;
+  box-shadow: 0 6px 0 var(--orange-shadow);
 }
 .btn--orange:hover {
-  box-shadow: 0 9px 0 #c25f00;
+  box-shadow: 0 9px 0 var(--orange-shadow);
 }
 .btn--cream {
   background: var(--cream);
   color: var(--brown);
-  box-shadow: 0 6px 0 #d9b98f;
+  box-shadow: 0 6px 0 var(--cream-shadow);
 }
 .btn--brown {
   background: var(--brown);
   color: var(--cream);
-  box-shadow: 0 6px 0 #160600;
+  box-shadow: 0 6px 0 var(--brown-shadow);
 }
 .btn--big {
   height: 58px;
@@ -411,7 +416,7 @@ button {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background: radial-gradient(60% 55% at 50% 45%, #5a1d03 0%, var(--brown) 70%);
+  background: radial-gradient(60% 55% at 50% 45%, var(--hero-glow) 0%, var(--brown) 70%);
   touch-action: pan-y;
   user-select: none;
 }
@@ -995,7 +1000,7 @@ button {
   border-radius: 26px;
   padding: 26px;
   rotate: 2deg;
-  box-shadow: 0 16px 0 #c25f00;
+  box-shadow: 0 16px 0 var(--orange-shadow);
 }
 .menu__promo-kicker {
   margin: 0 0 8px;
@@ -1838,7 +1843,7 @@ button {
   color: var(--brown);
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 6px 0 #c25f00, 0 16px 40px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 6px 0 var(--orange-shadow), 0 16px 40px rgba(0, 0, 0, 0.35);
 }
 .op-fab__count {
   display: grid;
@@ -2038,7 +2043,7 @@ button {
   background: var(--orange);
   color: var(--brown);
   cursor: pointer;
-  box-shadow: 0 4px 0 #c25f00;
+  box-shadow: 0 4px 0 var(--orange-shadow);
   transition: transform 0.25s var(--ease);
 }
 .op__add:hover {

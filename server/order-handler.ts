@@ -290,6 +290,8 @@ export async function handleOrderRequest(req: Request, env: Env, cfg: SiteConfig
   if (req.method === 'OPTIONS')
     return new Response(null, { status: 204, headers: { ...cors, 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'Content-Type' } })
   if (req.method !== 'POST') return json({ ok: false, error: 'Method not allowed' }, 405, cors)
+  // a demo site never forwards orders or creates payments, even if its server is deployed
+  if (cfg.mode === 'demo' || cfg.ordering.provider.type !== 'endpoint') return json({ ok: false, error: 'This site does not accept online orders.' }, 403, cors)
 
   const text = await req.text()
   if (text.length > 30_000) return json({ ok: false, error: 'Order is too large.' }, 413, cors)
@@ -358,10 +360,11 @@ export interface PaymentStatus {
  * Asks Stripe (with the secret key) whether a Checkout Session was paid. The browser shows
  * "Payment complete" only when this answers { ok: true, paid: true }. No personal data is returned.
  */
-export async function handlePaymentStatus(req: Request, env: Env, _cfg: SiteConfig, f: Fetch = fetch): Promise<Response> {
+export async function handlePaymentStatus(req: Request, env: Env, cfg: SiteConfig, f: Fetch = fetch): Promise<Response> {
   const cors = corsHeaders(req, env)
   const noStore = { ...cors, 'Cache-Control': 'no-store' }
   if (req.method !== 'GET') return json({ ok: false, error: 'Method not allowed' }, 405, noStore)
+  if (cfg.mode === 'demo') return json({ ok: false, error: 'This site does not take payments.' }, 403, noStore)
   if (!env.STRIPE_SECRET_KEY) return json({ ok: false, error: 'Payments are not configured.' }, 503, noStore)
   const id = new URL(req.url).searchParams.get('session_id') ?? ''
   if (!SESSION_ID.test(id)) return json({ ok: false, error: 'Invalid payment reference.' }, 400, noStore)
@@ -426,6 +429,7 @@ export async function handleStripeWebhook(
 ): Promise<Response> {
   const f = deps.fetch ?? fetch
   const now = deps.now ?? Date.now
+  if (cfg.mode === 'demo') return json({ error: 'demo site: payments disabled' }, 403)
   if (!env.STRIPE_WEBHOOK_SECRET || !env.STRIPE_SECRET_KEY) return json({ error: 'not configured' }, 503)
   if (!deps.store) return json({ error: 'idempotency store not configured' }, 503)
   const payload = await req.text()
