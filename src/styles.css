@@ -2068,6 +2068,8 @@ button {
   min-height: 1px;
   margin: 10px 0 0;
   font-weight: 700;
+  /* the toast floats over the last item: let taps through to that item's + button */
+  pointer-events: none;
 }
 .op__toast:not(:empty) {
   padding: 10px;
