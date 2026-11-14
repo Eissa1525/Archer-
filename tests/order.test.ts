@@ -51,7 +51,7 @@ describe('customer form', () => {
     expect(Object.keys(validateCustomer(demo, ok, 'delivery'))).toEqual(['address'])
   })
   it('requires email when online payment is used', () => {
-    const cfg = clientConfig({ ordering: { ...demo.ordering, provider: { type: 'endpoint', url: '/api/order' }, payment: { type: 'checkout-redirect' } } })
+    const cfg = clientConfig({ ordering: { ...demo.ordering, provider: { type: 'endpoint', url: '/api/order' }, payment: { type: 'checkout-redirect', statusUrl: '/api/payment-status' } } })
     expect(validateCustomer(cfg, ok, 'pickup').email).toBeDefined()
   })
 })
@@ -91,7 +91,7 @@ describe('submitOrder', () => {
   })
 
   it('checkout-redirect needs an https checkout URL from the server', async () => {
-    const pay = clientConfig({ ordering: { ...demo.ordering, provider: { type: 'endpoint', url: '/api/order' }, payment: { type: 'checkout-redirect' } } })
+    const pay = clientConfig({ ordering: { ...demo.ordering, provider: { type: 'endpoint', url: '/api/order' }, payment: { type: 'checkout-redirect', statusUrl: '/api/payment-status' } } })
     expect(await submitOrder(pay, payload, fakeFetch(jsonResponse({ ok: true, checkoutUrl: 'https://checkout.stripe.com/c/abc' })).fn)).toEqual({ kind: 'redirect', url: 'https://checkout.stripe.com/c/abc' })
     expect((await submitOrder(pay, payload, fakeFetch(jsonResponse({ ok: true, checkoutUrl: 'javascript:alert(1)' })).fn)).kind).toBe('error')
   })

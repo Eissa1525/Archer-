@@ -121,10 +121,12 @@ export type OrderingProvider =
  * - pay-on-collection  pay in store / to the driver; the order is just submitted.
  * - checkout-redirect  the endpoint returns `{ checkoutUrl }` (e.g. a Stripe Checkout Session
  *                      created server-side with the client's secret key) and the browser goes there.
+ *                      On return, the page asks `statusUrl` (server-side, checks with Stripe) whether
+ *                      the payment really went through before showing "Payment complete".
  */
 export type PaymentConfig =
   | { type: 'pay-on-collection'; note?: string }
-  | { type: 'checkout-redirect'; note?: string }
+  | { type: 'checkout-redirect'; note?: string; statusUrl: string }
 
 export interface Tax {
   label: string

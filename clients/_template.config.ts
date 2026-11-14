@@ -60,6 +60,7 @@ const config: SiteConfig = {
     ...demo.ordering,
     // Pick ONE: { type: 'endpoint', url: '/api/order' } | { type: 'external', pickupUrl, deliveryUrl }
     //           | { type: 'phone' } | { type: 'disabled' }
+    // Online card payment (endpoint only): payment: { type: 'checkout-redirect', statusUrl: '/api/payment-status' }
     provider: { type: 'phone' },
     payment: { type: 'pay-on-collection', note: 'Pay in store at pickup, or to the driver on delivery.' },
     taxes: [{ label: 'HST', rate: 0.13 }], // TODO check the client's province / tax registration

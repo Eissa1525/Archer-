@@ -6,10 +6,10 @@ import { Icon } from '../lib/Icon'
 import { scroller } from '../lib/anim'
 import { useOrder, hasCart } from './store'
 import { defaultSelection, describeSelection, findItem, groupsFor, selectionErrors, unitPriceCents, fromCents, type Selection } from './pricing'
-import { buildPayload, emptyForm, submitOrder, validateCustomer, type CustomerForm, type FormErrors, type SubmitResult } from './checkout'
+import { buildPayload, emptyForm, resolvePaymentReturn, submitOrder, validateCustomer, type CustomerForm, type FormErrors, type PaymentReturn, type SubmitResult } from './checkout'
 
 type Step = 'menu' | 'cart' | 'details' | 'done'
-type Done = Exclude<SubmitResult, { kind: 'error' } | { kind: 'redirect' }> | { kind: 'paid'; reference?: string } | { kind: 'cancelled' }
+type Done = Exclude<SubmitResult, { kind: 'error' } | { kind: 'redirect' }> | PaymentReturn | { kind: 'checking' }
 
 const ord = site.ordering
 /** The demo provider never sends anything; the UI must always say so. */
@@ -56,21 +56,29 @@ export function OrderPanel() {
   const panel = useRef<HTMLDivElement>(null)
   const heading = useRef<HTMLHeadingElement>(null)
 
-  // Coming back from a payment page (checkout-redirect): ?order=success|cancelled
+  // Coming back from a payment page (checkout-redirect): ?order=success&session_id=… | ?order=cancelled.
+  // The URL alone proves nothing: success is confirmed with the server (which asks Stripe) first.
   useEffect(() => {
-    const q = new URLSearchParams(location.search)
-    const status = q.get('order')
-    if (status !== 'success' && status !== 'cancelled') return
-    if (status === 'success') {
-      setDone({ kind: 'paid', reference: q.get('ref') ?? undefined })
-      o.clear()
-    } else setDone({ kind: 'cancelled' })
-    setStep('done')
-    o.open()
-    q.delete('order')
-    q.delete('ref')
+    const search = location.search
+    const status = new URLSearchParams(search).get('order')
+    if (ord.payment.type !== 'checkout-redirect' || (status !== 'success' && status !== 'cancelled')) return
+    let alive = true
+    // tidy the address bar so a reload or a shared link does not re-run this
+    const q = new URLSearchParams(search)
+    for (const k of ['order', 'session_id', 'ref']) q.delete(k)
     const rest = q.toString()
     history.replaceState(null, '', `${location.pathname}${rest ? `?${rest}` : ''}${location.hash}`)
+    setDone({ kind: 'checking' })
+    setStep('done')
+    o.open()
+    resolvePaymentReturn(site, search).then((r) => {
+      if (!alive || !r) return
+      if (r.kind === 'paid') o.clear()
+      setDone(r)
+    })
+    return () => {
+      alive = false
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -660,15 +668,31 @@ function DoneStep({ result, onClose, onBack }: { result: Done; onClose: () => vo
       title: 'Order received',
       body: `${site.business.shortName} has received your order${'reference' in result && result.reference ? ` (reference ${result.reference})` : ''}. ${'message' in result && result.message ? result.message : 'If anything changes, we will call you.'}`,
     },
+    checking: {
+      icon: 'clock',
+      title: 'Checking payment…',
+      body: 'One moment: we are confirming your payment with the payment provider.',
+    },
+    // only reachable after the server confirmed the Stripe session is paid
     paid: {
       icon: 'check',
       title: 'Payment complete',
       body: `Thanks! Your payment went through${'reference' in result && result.reference ? ` (reference ${result.reference})` : ''}. ${site.business.shortName} will confirm your order by email.`,
     },
+    unpaid: {
+      icon: 'alert',
+      title: 'Payment not completed',
+      body: 'The payment provider reports that this payment was not completed, so your order was not placed. Your cart is still here if you want to try again.',
+    },
+    unverified: {
+      icon: 'alert',
+      title: "We couldn't confirm your payment",
+      body: `Please don't pay again. Call ${site.contact.phoneDisplay} and we will check your order for you.`,
+    },
     cancelled: {
       icon: 'alert',
       title: 'Payment cancelled',
-      body: 'No payment was taken and your order was not placed. Your cart is still here if you want to try again.',
+      body: 'You left the payment page before paying, so your order was not placed. Your cart is still here if you want to try again.',
     },
   }[result.kind]
 
@@ -682,7 +706,12 @@ function DoneStep({ result, onClose, onBack }: { result: Done; onClose: () => vo
       </p>
       <p className="op__done-body">{content.body}</p>
       <div className="op__done-actions">
-        {result.kind === 'cancelled' && (
+        {result.kind === 'unverified' && (
+          <a className="btn btn--orange" href={telHref}>
+            Call {site.contact.phoneDisplay}
+          </a>
+        )}
+        {(result.kind === 'cancelled' || result.kind === 'unpaid') && (
           <button type="button" className="btn btn--orange" onClick={onBack}>
             Back to cart
           </button>

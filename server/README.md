@@ -48,22 +48,56 @@ web-standard APIs, so the same code runs on most hosts.
    ordering works.
 
 ## Online payment (Stripe Checkout), optional
-Set `payment: { type: 'checkout-redirect' }`. The flow:
-1. The endpoint creates a Stripe Checkout Session with the client's secret key and server-side
+Set `payment: { type: 'checkout-redirect', statusUrl: '/api/payment-status' }`. The flow:
+1. `/api/order` creates a Stripe Checkout Session with the client's secret key and server-side
    prices.
-2. The customer pays on Stripe's page and returns to `SITE_URL/?order=success&ref=…` (or
-   `?order=cancelled`).
-3. Stripe calls `handleStripeWebhook`. The restaurant is notified **only after payment succeeded**.
+2. The customer pays on Stripe's page and returns to
+   `SITE_URL/?order=success&session_id=cs_…` (or `?order=cancelled`).
+3. **The return URL proves nothing.** The page calls `GET /api/payment-status?session_id=…`
+   (`handlePaymentStatus`), which asks Stripe with the secret key. "Payment complete" is shown, and
+   the cart cleared, only when Stripe reports the session `complete` **and** `paid`. A forged or
+   unverifiable link shows "We couldn't confirm your payment" with the phone number.
+4. Stripe calls `POST /api/stripe-webhook` (`handleStripeWebhook`). The restaurant is notified
+   **only after payment succeeded**, and **only once per Checkout Session**.
 
-To activate the webhook, create a second function that calls `handleStripeWebhook` instead of
-`handleOrderRequest`, for example `functions/api/stripe-webhook.ts`. Then add the endpoint in the
-Stripe dashboard (event `checkout.session.completed`) and put its signing secret in
-`STRIPE_WEBHOOK_SECRET`.
+**Three functions to activate** (Cloudflare Pages: copy to `functions/api/…` and fix imports):
 
-**Status:** the Stripe code is unit-tested against Stripe's documented request format and
-signature scheme. It has **not** been run against a live Stripe account. Test it in Stripe test
-mode with the client's account before going live.
+| Adapter | Route |
+|---|---|
+| `server/adapters/cloudflare-pages.ts` | `/api/order` |
+| `server/adapters/cloudflare-pages-payment-status.ts` | `/api/payment-status` |
+| `server/adapters/cloudflare-pages-stripe-webhook.ts` | `/api/stripe-webhook` |
+
+In the Stripe dashboard, add the webhook endpoint (event `checkout.session.completed`) and put its
+signing secret in `STRIPE_WEBHOOK_SECRET`.
+
+### Webhook idempotency (no duplicate kitchen orders)
+Stripe can deliver the same event more than once, for example on retries or timeouts. The webhook
+claims each Checkout Session in a key-value store before notifying the kitchen:
+- **Already delivered:** answered `200 { duplicate: true }`, nothing is sent again.
+- **Another delivery is processing it right now:** `409`, so Stripe retries later.
+- **The kitchen couldn't be reached:** the claim is released and a `500` makes Stripe retry, so the
+  order still arrives, exactly once.
+- **No store configured:** `503`, nothing sent. It refuses rather than risk duplicates.
+- As a second layer, the same `Idempotency-Key: stripe-<session>` is sent to Resend and to the
+  order webhook, so receivers that support it can also drop duplicates.
+
+**Store setup (Cloudflare):** create a KV namespace and bind it to the Pages project as
+`ORDERS_KV`. KV handles retries well. Two deliveries arriving in the **same instant** in different
+data centres could, rarely, both get through, because KV has no atomic "create if missing". For a
+strict guarantee, give `handleStripeWebhook` a store with `putIfAbsent` backed by a Durable
+Object, a database unique key (D1/Postgres) or Redis `SET NX`. The interface is `KeyValueStore`
+in `order-handler.ts`. Other hosts (Vercel, Netlify) must supply such a store; there is no built-in
+one.
+
+**Status:** the Stripe code is unit-tested against Stripe's documented request format, session
+statuses and signature scheme, and the return page is browser-tested against the real status
+handler with Stripe simulated. It has **not** been run against a live Stripe account. Test it in
+Stripe test mode with the client's account before going live, including replaying a webhook event
+from the Stripe dashboard to confirm no duplicate order arrives.
 
 ## Tests
 `npm test` covers price recomputation, tampering, validation, all channels failing, honeypot, the
-Stripe session request, and webhook signatures.
+Stripe session request, webhook signatures, payment-status verification (paid / unpaid / expired /
+forged / malformed / Stripe down) and webhook idempotency (repeat, simultaneous, failure then retry,
+missing store).

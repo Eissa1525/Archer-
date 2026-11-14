@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { handleOrderRequest, handleStripeWebhook, validateOrder, verifyStripeSignature } from '../server/order-handler'
+import { handleOrderRequest, handleStripeWebhook, memoryStore, validateOrder, verifyStripeSignature } from '../server/order-handler'
 import { clientConfig, demo, fakeFetch, jsonResponse } from './helpers'
 
 const cfg = clientConfig()
@@ -72,7 +72,7 @@ describe('POST /api/order', () => {
   })
 
   it('creates a Stripe Checkout Session with server-side prices and fixed return URLs', async () => {
-    const pay = clientConfig({ ordering: { ...demo.ordering, provider: { type: 'endpoint', url: '/api/order' }, payment: { type: 'checkout-redirect' } } })
+    const pay = clientConfig({ ordering: { ...demo.ordering, provider: { type: 'endpoint', url: '/api/order' }, payment: { type: 'checkout-redirect', statusUrl: '/api/payment-status' } } })
     const f = fakeFetch(jsonResponse({ url: 'https://checkout.stripe.com/c/test' }))
     const env = { STRIPE_SECRET_KEY: 'sk_test_x', SITE_URL: 'https://smokehouse.ca' }
     const res = await handleOrderRequest(post(order({ customer: { name: 'Ana', phone: '4165550123', email: 'ana@x.ca' }, returnUrl: 'https://evil.test' })), env, pay, f.fn)
@@ -82,7 +82,7 @@ describe('POST /api/order', () => {
     expect(form.get('line_items[0][price_data][unit_amount]')).toBe('1750')
     expect(form.get('line_items[0][quantity]')).toBe('2')
     expect(form.get('line_items[0][price_data][currency]')).toBe('cad')
-    expect(form.get('success_url')).toMatch(/^https:\/\/smokehouse\.ca\/\?order=success&ref=SMO-/)
+    expect(form.get('success_url')).toBe('https://smokehouse.ca/?order=success&session_id={CHECKOUT_SESSION_ID}')
     expect(form.get('cancel_url')).toBe('https://smokehouse.ca/?order=cancelled')
   })
 })
@@ -111,7 +111,7 @@ describe('Stripe webhook', () => {
     })
     const f = fakeFetch(jsonResponse({ data: [{ description: 'Buffalo', quantity: 2, amount_total: 3500 }] }), new Response('ok'))
     const req = new Request('https://s.test/api/stripe-webhook', { method: 'POST', body: event, headers: { 'Stripe-Signature': await sign(event, Math.floor(Date.now() / 1000)) } })
-    const res = await handleStripeWebhook(req, { STRIPE_SECRET_KEY: 'sk', STRIPE_WEBHOOK_SECRET: secret, ORDER_WEBHOOK_URL: 'https://hooks.test' }, cfg, f.fn)
+    const res = await handleStripeWebhook(req, { STRIPE_SECRET_KEY: 'sk', STRIPE_WEBHOOK_SECRET: secret, ORDER_WEBHOOK_URL: 'https://hooks.test' }, cfg, { store: memoryStore(), fetch: f.fn })
     expect(res.status).toBe(200)
     expect(JSON.parse(String(f.calls[1].init?.body)).text).toContain('PAID PICKUP ORDER SMO-1')
   })

@@ -139,3 +139,47 @@ export async function submitOrder(cfg: SiteConfig, payload: OrderPayload, fetchI
     clearTimeout(timer)
   }
 }
+
+/* ------------------------------------------------------------------ */
+/* Returning from the payment page                                    */
+/* ------------------------------------------------------------------ */
+
+/** What the order panel shows after a payment redirect. Only 'paid' may say "Payment complete". */
+export type PaymentReturn =
+  | { kind: 'paid'; reference?: string }
+  | { kind: 'unpaid' }
+  | { kind: 'unverified'; reason: string }
+  | { kind: 'cancelled' }
+
+const SESSION_ID = /^cs_(test_|live_)?[A-Za-z0-9]{10,200}$/
+
+/**
+ * Reads `?order=success&session_id=…` / `?order=cancelled` after Stripe Checkout.
+ * The URL proves nothing, so success is confirmed server-side (statusUrl → Stripe) before it is shown.
+ * Returns null when the page was not reached from a payment redirect, or payments are not enabled.
+ */
+export async function resolvePaymentReturn(cfg: Pick<SiteConfig, 'ordering'>, search: string, fetchImpl: typeof fetch = fetch): Promise<PaymentReturn | null> {
+  const payment = cfg.ordering.payment
+  if (payment.type !== 'checkout-redirect') return null
+  const q = new URLSearchParams(search)
+  const status = q.get('order')
+  if (status === 'cancelled') return { kind: 'cancelled' }
+  if (status !== 'success') return null
+
+  const sessionId = q.get('session_id') ?? ''
+  if (!SESSION_ID.test(sessionId)) return { kind: 'unverified', reason: 'missing-session' }
+
+  const ctrl = new AbortController()
+  const timer = setTimeout(() => ctrl.abort(), 15000)
+  try {
+    const sep = payment.statusUrl.includes('?') ? '&' : '?'
+    const res = await fetchImpl(`${payment.statusUrl}${sep}session_id=${encodeURIComponent(sessionId)}`, { headers: { Accept: 'application/json' }, signal: ctrl.signal })
+    const data = (await res.json().catch(() => ({}))) as { ok?: boolean; paid?: boolean; reference?: string }
+    if (!res.ok || data.ok !== true) return { kind: 'unverified', reason: `status-${res.status}` }
+    return data.paid === true ? { kind: 'paid', reference: data.reference } : { kind: 'unpaid' }
+  } catch {
+    return { kind: 'unverified', reason: 'network' }
+  } finally {
+    clearTimeout(timer)
+  }
+}

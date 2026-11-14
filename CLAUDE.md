@@ -14,7 +14,9 @@ Branch `claude/street-food-site` is a standalone project (separate from the AETH
   component.
 - **Honesty rules:** demo labels show only in `mode: 'demo'`. Sample reviews never show in client
   mode. The demo ordering provider must always say orders aren't sent. "Order received" is shown
-  only after the endpoint answers `{ ok: true }`. Secrets live only in server env vars.
+  only after the endpoint answers `{ ok: true }`. "Payment complete" only after `/api/payment-status`
+  confirms with Stripe (never from `?order=success`). The Stripe webhook must stay idempotent per
+  Checkout Session (`claimSession`). Secrets live only in server env vars.
 
 ## Layout
 - `src/config/`: site config, types, `validate.ts` (client builds fail on placeholders),

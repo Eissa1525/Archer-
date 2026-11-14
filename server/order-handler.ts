@@ -28,6 +28,42 @@ export interface Env {
   STRIPE_WEBHOOK_SECRET?: string
 }
 
+/**
+ * Key-value storage used to make the Stripe webhook idempotent.
+ * The shape matches a Cloudflare KV namespace (get / put with expirationTtl / delete), so a KV binding
+ * can be passed straight in. `putIfAbsent` is optional: provide it when the store supports an atomic
+ * "create only if missing" (Durable Object, D1/Postgres unique insert, Redis SET NX) to also make
+ * truly simultaneous deliveries safe. Without it, retries are still de-duplicated.
+ */
+export interface KeyValueStore {
+  get(key: string): Promise<string | null>
+  put(key: string, value: string, options?: { expirationTtl?: number }): Promise<void>
+  delete(key: string): Promise<void>
+  putIfAbsent?(key: string, value: string, options?: { expirationTtl?: number }): Promise<boolean>
+}
+
+/** In-memory store (atomic). For tests and local runs only: serverless instances do not share memory. */
+export function memoryStore(): KeyValueStore & { data: Map<string, string> } {
+  const data = new Map<string, string>()
+  return {
+    data,
+    async get(k) {
+      return data.get(k) ?? null
+    },
+    async put(k, v) {
+      data.set(k, v)
+    },
+    async delete(k) {
+      data.delete(k)
+    },
+    async putIfAbsent(k, v) {
+      if (data.has(k)) return false
+      data.set(k, v)
+      return true
+    },
+  }
+}
+
 type Fetch = typeof fetch
 
 interface IncomingItem {
@@ -212,7 +248,9 @@ export async function createStripeCheckout(_cfg: SiteConfig, env: Env, o: ValidO
   const p = new URLSearchParams()
   p.set('mode', 'payment')
   // return URLs come from server config, never from the browser (no open redirects)
-  p.set('success_url', `${base}/?order=success&ref=${encodeURIComponent(o.reference)}`)
+  // {CHECKOUT_SESSION_ID} is filled in by Stripe; the page sends it to /api/payment-status, which
+  // asks Stripe whether this session is really paid (the URL itself proves nothing).
+  p.set('success_url', `${base}/?order=success&session_id={CHECKOUT_SESSION_ID}`)
   p.set('cancel_url', `${base}/?order=cancelled`)
   if (o.customer.email) p.set('customer_email', o.customer.email)
   const cur = o.currency.toLowerCase()
@@ -301,42 +339,152 @@ export async function verifyStripeSignature(payload: string, header: string | nu
   return sigs.some((s) => s.length === expected.length && [...s].reduce((acc, ch, i) => acc | (ch.charCodeAt(0) ^ expected.charCodeAt(i)), 0) === 0)
 }
 
-/** POST /api/stripe-webhook — notifies the restaurant once Stripe confirms the payment. */
-export async function handleStripeWebhook(req: Request, env: Env, cfg: SiteConfig, f: Fetch = fetch): Promise<Response> {
+/* ---------------------- payment status (return page) ---------------------- */
+
+const SESSION_ID = /^cs_(test_|live_)?[A-Za-z0-9]{10,200}$/
+
+export interface PaymentStatus {
+  ok: boolean
+  /** true only when Stripe reports the session complete AND paid. */
+  paid?: boolean
+  /** Stripe session status: open | complete | expired */
+  status?: string
+  reference?: string
+  error?: string
+}
+
+/**
+ * GET /api/payment-status?session_id=cs_...
+ * Asks Stripe (with the secret key) whether a Checkout Session was paid. The browser shows
+ * "Payment complete" only when this answers { ok: true, paid: true }. No personal data is returned.
+ */
+export async function handlePaymentStatus(req: Request, env: Env, _cfg: SiteConfig, f: Fetch = fetch): Promise<Response> {
+  const cors = corsHeaders(req, env)
+  const noStore = { ...cors, 'Cache-Control': 'no-store' }
+  if (req.method !== 'GET') return json({ ok: false, error: 'Method not allowed' }, 405, noStore)
+  if (!env.STRIPE_SECRET_KEY) return json({ ok: false, error: 'Payments are not configured.' }, 503, noStore)
+  const id = new URL(req.url).searchParams.get('session_id') ?? ''
+  if (!SESSION_ID.test(id)) return json({ ok: false, error: 'Invalid payment reference.' }, 400, noStore)
+  let res: Response
+  try {
+    res = await f(`https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(id)}`, { headers: { Authorization: `Bearer ${env.STRIPE_SECRET_KEY}` } })
+  } catch {
+    return json({ ok: false, error: 'Could not reach the payment provider.' }, 502, noStore)
+  }
+  if (res.status === 404) return json({ ok: false, error: 'Payment not found.' }, 404, noStore)
+  if (!res.ok) return json({ ok: false, error: 'Could not check the payment.' }, 502, noStore)
+  const sess = (await res.json().catch(() => ({}))) as { status?: string; payment_status?: string; metadata?: Record<string, string> }
+  const paid = sess.status === 'complete' && sess.payment_status === 'paid'
+  return json({ ok: true, paid, status: sess.status, reference: sess.metadata?.reference } satisfies PaymentStatus, 200, noStore)
+}
+
+/* ------------------------- Stripe webhook ------------------------- */
+
+/** How long an unfinished claim blocks other deliveries of the same session. */
+const PROCESSING_LOCK_MS = 120_000
+/** How long a finished session is remembered (Stripe retries for up to 3 days). */
+const DONE_TTL_SECONDS = 60 * 60 * 24 * 30
+
+type Claim = { state: 'processing' | 'done'; at: number }
+
+/**
+ * Claims a Stripe session for processing.
+ * 'new'        → this delivery must notify the restaurant.
+ * 'done'       → already delivered: acknowledge without notifying again.
+ * 'processing' → another delivery is working on it right now: ask Stripe to retry later.
+ */
+export async function claimSession(store: KeyValueStore, key: string, now = Date.now()): Promise<'new' | 'done' | 'processing'> {
+  const value = JSON.stringify({ state: 'processing', at: now } satisfies Claim)
+  const ttl = { expirationTtl: Math.ceil((PROCESSING_LOCK_MS * 2) / 1000) }
+  if (store.putIfAbsent && (await store.putIfAbsent(key, value, ttl))) return 'new'
+  const existing = await store.get(key)
+  if (existing) {
+    let claim: Claim | null = null
+    try {
+      claim = JSON.parse(existing) as Claim
+    } catch {
+      /* corrupt entry: treat as missing */
+    }
+    if (claim?.state === 'done') return 'done'
+    if (claim && now - claim.at < PROCESSING_LOCK_MS) return 'processing'
+  }
+  // stale or missing claim: take it over
+  await store.put(key, value, ttl)
+  return 'new'
+}
+
+/**
+ * POST /api/stripe-webhook — notifies the restaurant once Stripe confirms the payment.
+ * Idempotent per Checkout Session: Stripe retries and duplicate deliveries never create a second
+ * kitchen order. Requires a KeyValueStore; without one it refuses (503) rather than risk duplicates.
+ */
+export async function handleStripeWebhook(
+  req: Request,
+  env: Env,
+  cfg: SiteConfig,
+  deps: { store?: KeyValueStore | null; fetch?: Fetch; now?: () => number } = {},
+): Promise<Response> {
+  const f = deps.fetch ?? fetch
+  const now = deps.now ?? Date.now
   if (!env.STRIPE_WEBHOOK_SECRET || !env.STRIPE_SECRET_KEY) return json({ error: 'not configured' }, 503)
+  if (!deps.store) return json({ error: 'idempotency store not configured' }, 503)
   const payload = await req.text()
   if (!(await verifyStripeSignature(payload, req.headers.get('Stripe-Signature'), env.STRIPE_WEBHOOK_SECRET))) return json({ error: 'bad signature' }, 400)
-  const event = JSON.parse(payload) as { type: string; data: { object: { id: string; metadata: Record<string, string>; customer_details?: { email?: string }; amount_total?: number; payment_status?: string } } }
+  const event = JSON.parse(payload) as { id?: string; type: string; data: { object: { id: string; metadata: Record<string, string>; customer_details?: { email?: string }; amount_total?: number; payment_status?: string } } }
   if (event.type !== 'checkout.session.completed' || event.data.object.payment_status !== 'paid') return json({ received: true })
 
   const s = event.data.object
-  const r = await f(`https://api.stripe.com/v1/checkout/sessions/${s.id}/line_items?limit=100`, { headers: { Authorization: `Bearer ${env.STRIPE_SECRET_KEY}` } })
-  const items = ((await r.json().catch(() => ({}))) as { data?: { description: string; quantity: number; amount_total: number }[] }).data ?? []
-  const md = s.metadata
-  const m = (cents: number) => new Intl.NumberFormat(cfg.locale.locale, { style: 'currency', currency: cfg.locale.currency }).format(cents / 100)
-  const ticket = [
-    `PAID ${md.fulfillment?.toUpperCase()} ORDER ${md.reference}`,
-    `${md.name} · ${md.phone}${s.customer_details?.email ? ` · ${s.customer_details.email}` : ''}`,
-    md.address ? `Deliver to: ${md.address}` : 'Pickup',
-    '',
-    ...items.map((i) => `${i.quantity} × ${i.description}  ${m(i.amount_total)}`),
-    '',
-    `PAID ${m(s.amount_total ?? 0)} (Stripe ${s.id})`,
-    ...(md.notes ? [`Notes: ${md.notes}`] : []),
-  ].join('\n')
-  const order = { reference: md.reference, paid: true, stripeSession: s.id, ticket }
-  const sends: Promise<boolean>[] = []
-  if (env.ORDER_WEBHOOK_URL)
-    sends.push(f(env.ORDER_WEBHOOK_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: ticket, content: ticket.slice(0, 1900), order }) }).then((x) => x.ok, () => false))
-  if (env.RESEND_API_KEY && env.ORDER_EMAIL_TO && env.ORDER_EMAIL_FROM)
-    sends.push(
-      f('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ from: env.ORDER_EMAIL_FROM, to: env.ORDER_EMAIL_TO.split(',').map((x) => x.trim()), subject: `PAID order ${md.reference} — ${md.name}`, text: ticket }),
-      }).then((x) => x.ok, () => false),
-    )
-  const ok = (await Promise.all(sends)).some(Boolean)
-  // a non-2xx makes Stripe retry later, which is what we want if the kitchen was not reached
-  return ok ? json({ received: true }) : json({ error: 'notification failed' }, 500)
+  const key = `stripe-session:${s.id}`
+  const claim = await claimSession(deps.store, key, now())
+  if (claim === 'done') return json({ received: true, duplicate: true })
+  if (claim === 'processing') return json({ error: 'already processing, retry later' }, 409)
+
+  let delivered = false
+  try {
+    const r = await f(`https://api.stripe.com/v1/checkout/sessions/${s.id}/line_items?limit=100`, { headers: { Authorization: `Bearer ${env.STRIPE_SECRET_KEY}` } })
+    const items = ((await r.json().catch(() => ({}))) as { data?: { description: string; quantity: number; amount_total: number }[] }).data ?? []
+    const md = s.metadata
+    const m = (cents: number) => new Intl.NumberFormat(cfg.locale.locale, { style: 'currency', currency: cfg.locale.currency }).format(cents / 100)
+    const ticket = [
+      `PAID ${md.fulfillment?.toUpperCase()} ORDER ${md.reference}`,
+      `${md.name} · ${md.phone}${s.customer_details?.email ? ` · ${s.customer_details.email}` : ''}`,
+      md.address ? `Deliver to: ${md.address}` : 'Pickup',
+      '',
+      ...items.map((i) => `${i.quantity} × ${i.description}  ${m(i.amount_total)}`),
+      '',
+      `PAID ${m(s.amount_total ?? 0)} (Stripe ${s.id})`,
+      ...(md.notes ? [`Notes: ${md.notes}`] : []),
+    ].join('\n')
+    // same key downstream too, so receivers that support it can drop duplicates as a second layer
+    const idempotencyKey = `stripe-${s.id}`
+    const order = { reference: md.reference, paid: true, stripeSession: s.id, idempotencyKey, ticket }
+    const sends: Promise<boolean>[] = []
+    if (env.ORDER_WEBHOOK_URL)
+      sends.push(
+        f(env.ORDER_WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Idempotency-Key': idempotencyKey },
+          body: JSON.stringify({ text: ticket, content: ticket.slice(0, 1900), order }),
+        }).then((x) => x.ok, () => false),
+      )
+    if (env.RESEND_API_KEY && env.ORDER_EMAIL_TO && env.ORDER_EMAIL_FROM)
+      sends.push(
+        f('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json', 'Idempotency-Key': idempotencyKey },
+          body: JSON.stringify({ from: env.ORDER_EMAIL_FROM, to: env.ORDER_EMAIL_TO.split(',').map((x) => x.trim()), subject: `PAID order ${md.reference} — ${md.name}`, text: ticket }),
+        }).then((x) => x.ok, () => false),
+      )
+    delivered = (await Promise.all(sends)).some(Boolean)
+  } catch {
+    delivered = false
+  }
+
+  if (delivered) {
+    await deps.store.put(key, JSON.stringify({ state: 'done', at: now() } satisfies Claim), { expirationTtl: DONE_TTL_SECONDS })
+    return json({ received: true })
+  }
+  // release the claim so Stripe's retry can deliver it (a non-2xx makes Stripe retry)
+  await deps.store.delete(key)
+  return json({ error: 'notification failed' }, 500)
 }

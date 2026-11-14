@@ -176,8 +176,11 @@ check the provider's site. Rough guide at the time of writing:
 **Built and tested, but waiting for the client's own credentials:**
 - **Real order submission:** server function plus email (Resend) and/or webhook. Tested end to end
   against a local stand-in for the kitchen; needs the client's host and email/webhook account.
-- **Stripe online payment:** unit-tested only. Must be tested in Stripe test mode with the client's
-  account before launch.
+- **Stripe online payment:** "Payment complete" is shown only after the server confirms with
+  Stripe that the session is paid, and the payment webhook is idempotent, so retries never
+  duplicate an order. Both are covered by automated tests with Stripe simulated. Needs the client's
+  Stripe account, a KV namespace (Cloudflare) or equivalent store, and a test-mode run before
+  launch.
 
 **Not included:**
 - An admin dashboard or CMS for non-technical edits. Content changes mean editing

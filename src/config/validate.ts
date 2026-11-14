@@ -59,6 +59,10 @@ export function validateConfig(c: SiteConfig): ValidationResult {
   if (p.type === 'external') for (const u of [p.pickupUrl, p.deliveryUrl]) if (u && !isHttpUrl(u)) errors.push(`ordering: "${u}" is not a valid URL`)
   if (c.ordering.payment.type === 'checkout-redirect' && p.type !== 'endpoint')
     errors.push('ordering.payment "checkout-redirect" requires the "endpoint" provider (the server creates the checkout session)')
+  if (c.ordering.payment.type === 'checkout-redirect') {
+    const u = c.ordering.payment.statusUrl ?? ''
+    if (!(isHttpUrl(u) || u.startsWith('/'))) errors.push('ordering.payment.statusUrl must point to the payment-status endpoint, e.g. /api/payment-status')
+  }
   if (!c.ordering.pickup.enabled && !c.ordering.delivery.enabled && (p.type === 'demo' || p.type === 'endpoint'))
     errors.push('ordering: enable pickup and/or delivery')
   for (const t of c.ordering.taxes) if (!(t.rate >= 0 && t.rate < 1)) errors.push(`ordering.taxes: "${t.label}" rate must be a fraction like 0.13`)

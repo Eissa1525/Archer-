@@ -30,7 +30,7 @@ describe('config validation', () => {
   it('catches broken menus and ordering setups', () => {
     const cfg = clientConfig()
     cfg.menu = { ...cfg.menu, categories: [{ id: 'x', label: 'X', items: [{ id: 'a', name: 'A', price: 1, options: ['nope'] }, { id: 'a', name: 'B', price: -1 }] }] }
-    cfg.ordering = { ...cfg.ordering, provider: { type: 'external' }, payment: { type: 'checkout-redirect' } }
+    cfg.ordering = { ...cfg.ordering, provider: { type: 'external' }, payment: { type: 'checkout-redirect', statusUrl: '/api/payment-status' } }
     const e = validateConfig(cfg).errors.join('\n')
     expect(e).toMatch(/unknown option group "nope"/)
     expect(e).toMatch(/duplicate item id "a"/)
