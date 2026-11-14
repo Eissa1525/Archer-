@@ -74,6 +74,9 @@ and Lenis for smooth scrolling (driven by GSAP's ticker, so ScrollTrigger stays 
 - `?capture` disables GSAP lag smoothing, for automated screenshots only.
 - The vite plugin loads the site config with `runnerImport` (not Node's `import()`), so configs can
   use extensionless TS imports.
+- A grid item that holds a `max-content` marquee track must be allowed to shrink
+  (`minmax(0, 1fr)`). Otherwise it grows to the full track width, and any `rotate` pivots far
+  off-screen (the marquee stripe used to land on the third row).
 - The order panel stops Lenis while it's open (`scroller.lenis`) and its body has
   `data-lenis-prevent`.
 

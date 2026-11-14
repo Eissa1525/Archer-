@@ -1030,6 +1030,9 @@ button {
   padding: clamp(30px, 4vw, 54px) 0;
   overflow: hidden;
   display: grid;
+  /* rows stay as wide as the section: without minmax(0, …) a row grows to its whole track, so the
+     tilted middle stripe pivots thousands of pixels off-screen and drops onto the third row */
+  grid-template-columns: minmax(0, 1fr);
   gap: 6px;
 }
 /* cream on orange fails contrast (2.1:1), so the middle row runs on its own brown stripe */
