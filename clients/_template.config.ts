@@ -78,8 +78,8 @@ const config: SiteConfig = {
 
   credits: {
     studio: { name: 'AETHER Studio', url: 'https://aether-immersive-studio.vercel.app/' },
-    // keep if Unsplash photos are still used; remove when all photos are the client's own
-    photoCredits: { prefix: 'Some photos from Unsplash', label: 'Photo credits', url: './credits.html' },
+    // only if third-party photos are used, e.g. { prefix: 'Some photos from Unsplash', label: 'Photo credits', url: './credits.html' }
+    photoCredits: null,
   },
 
   // replace the Fire Alley photos and copy section by section, e.g.:

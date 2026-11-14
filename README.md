@@ -47,7 +47,9 @@ Select a config with `SITE_CONFIG=clients/<name>.config.ts`; the default is the 
 | [docs/ACTIVATION-CHECKLIST.md](docs/ACTIVATION-CHECKLIST.md) | switching on real online ordering and Stripe |
 | [docs/HANDOVER-PROCESS.md](docs/HANDOVER-PROCESS.md) | transferring hosting, domain, accounts and code to the client |
 | [server/README.md](server/README.md) | the optional order, payment-status and Stripe-webhook functions |
-| [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) | licences of software, fonts and photos |
+| [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) | licences of software and fonts |
+| [LICENSE.md](LICENSE.md) | your licence: one website per licence |
+| [INSTALL.md](INSTALL.md) | step-by-step first install |
 
 ## Project layout
 ```
@@ -59,7 +61,7 @@ server/                     optional server functions plus host adapters
 clients/_template.config.ts starting point for a new client
 scripts/                    check, new-client, scan:secrets, package
 tests/                      vitest suites
-public/img/                 photos (demo photos are placeholders, see notices)
+public/img/                 original placeholder images: replace with the restaurant's photos
 ```
 
 ## Security

@@ -63,9 +63,10 @@ into `contact.mapsUrl`.
 2. Point the config at them, e.g. `img('about-kitchen')` for `public/img/about-kitchen.webp`.
 3. Hero dishes look best as **cut-outs on a transparent background** (`.webp` or `.png`). Use
    `cutout: 'round'` for round plates and `'free'` for other shapes.
-4. **Replace the demo photos.** They are Unsplash photos of other restaurants' food, included only
-   to show the design. When none remain, delete `public/credits.html` and set
-   `credits.photoCredits` to `null`.
+4. **Every image shipped in `public/img/` is a placeholder.** Each one shows its file name, size
+   and the kind of photo that belongs there. Replace them all with the restaurant's own photos (or
+   photos you have the rights to). If you use third-party photos that require credit, fill in
+   `credits.photoCredits` and add a credits page.
 
 **Menu and prices:** edit `menu.categories`.
 - Each item needs a unique `id`; the cart and the order server use it.

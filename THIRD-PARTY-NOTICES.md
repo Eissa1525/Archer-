@@ -25,14 +25,11 @@ SIL Open Font License 1.1. Loading them from Google's servers sends visitors' IP
 Google. Self-hosting the fonts avoids that; set `theme.fonts.googleFontsUrl` to `null` and add the
 font files yourself.
 
-## Photos
-The demo photos in `public/img/` are from Unsplash, under the Unsplash License
-(https://unsplash.com/license). Sources are listed in `public/img/CREDITS.md` and
-`public/credits.html`. They were cropped, resized and, for the hero dishes, cut out.
-
-They are **placeholders for the demo only**. They show other restaurants' food, and the Unsplash
-License does not allow selling the images themselves. **Replace them with the client's own photos
-for every client site.**
+## Images
+**No third-party photos are included.** The images in `public/img/` are original placeholders
+generated for this template (`scripts/make-placeholders.py`) and are covered by `LICENSE.md`.
+Replace them with photos you have the rights to.
 
 ## Icons
-The interface icons in `src/lib/Icon.tsx` are original drawings made for this template.
+The interface icons (`src/lib/Icon.tsx`), torn-paper edges, grain texture and favicon are original
+artwork, drawn in code for this template, and covered by `LICENSE.md`.

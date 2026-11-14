@@ -45,6 +45,8 @@ const count = (dir) => readdirSync(dir).reduce((n, f) => n + (statSync(path.join
 const exported = count(tmp)
 rmSync(tmp, { recursive: true, force: true })
 
+const licence = readFileSync('LICENSE.md', 'utf8')
+const blanks = [...new Set(licence.match(/\[(LICENSOR LEGAL NAME|PROVINCE|YEAR)\]/g) ?? [])]
 const sha = createHash('sha256').update(readFileSync(zip)).digest('hex')
 console.log(`
 ✓ ${zip}
@@ -52,3 +54,5 @@ console.log(`
   files    ${exported} (of ${files.length} in git; internal files excluded via .gitattributes)
   size     ${(statSync(zip).size / 1e6).toFixed(2)} MB
   sha256   ${sha}`)
+if (blanks.length || /DRAFT FOR REVIEW/.test(licence))
+  console.log(`\n⚠ NOT READY FOR SALE: LICENSE.md is still a draft${blanks.length ? ` with blanks ${blanks.join(', ')}` : ''}.\n  Fill them in, remove the DRAFT notice after review, commit, and run npm run package again.`)

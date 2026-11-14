@@ -349,7 +349,9 @@ const config: SiteConfig = {
 
   credits: {
     studio: { name: 'AETHER Studio', url: 'https://aether-immersive-studio.vercel.app/' },
-    photoCredits: { prefix: 'Photos from Unsplash (Unsplash License)', label: 'Photo credits', url: './credits.html' },
+    // The shipped images are original placeholders. If you use third-party photos, credit them here, e.g.
+    // { prefix: 'Photos from Unsplash', label: 'Photo credits', url: './credits.html' }
+    photoCredits: null,
   },
 
   demo: {

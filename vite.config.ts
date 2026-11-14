@@ -57,6 +57,8 @@ function fillHead(html: string, site: SiteConfig): string {
 
 export default defineConfig({
   base: './',
+  // static files (images…). PUBLIC_DIR lets the internal showcase build use licensed demo photos.
+  publicDir: process.env.PUBLIC_DIR ?? 'public',
   plugins: [restaurantConfig(), react()],
   resolve: { alias: { '@site-config': configFile } },
   build: { target: 'es2022', chunkSizeWarningLimit: 700 },

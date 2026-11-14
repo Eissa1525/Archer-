@@ -19,7 +19,7 @@ Status markers: ☐ to do · ☑ done · N/A not needed
 - ☐ `mode: 'client'` in the config
 - ☐ Real name, address, **Google Maps link**, phone, email, opening hours
 - ☐ Real menu, prices, taxes (the client confirms their tax registration and rates)
-- ☐ The client's own photos; Unsplash demo photos removed
+- ☐ The client's own photos (every placeholder image in `public/img/` replaced)
 - ☐ Reviews: real ones with a source, or none
 - ☐ `npm run check` passes with **0 problems**
 
