@@ -1,7 +1,9 @@
 import { useRef } from 'react'
 import { gsap, revealTitle, useSectionAnim } from '../lib/anim'
 import { TornEdge } from '../lib/TornEdge'
-import { gallery } from '../data'
+import { site } from '../config'
+
+const gallery = site.gallery
 
 /** Pinned horizontal gallery: vertical scroll drives a sideways run of tilted polaroids. */
 export function Gallery() {
@@ -43,22 +45,22 @@ export function Gallery() {
       <TornEdge color="var(--cream)" flip seed={13} />
       <div className="gallery__pin">
         <div className="gallery__head">
-          <h2 className="gallery__title display">LIFE IN THE ALLEY</h2>
-          <p className="section__lede section__lede--light">Real food, loud nights, good people.</p>
+          <h2 className="gallery__title display">{gallery.title}</h2>
+          <p className="section__lede section__lede--light">{gallery.lede}</p>
         </div>
         <div className="gallery__track">
-          {gallery.map((g, i) => (
+          {gallery.items.map((g, i) => (
             <figure key={g.src} className={`polaroid polaroid--${i % 3}`} data-cursor="Look">
               <img src={g.src} alt={g.caption} loading="lazy" />
               <figcaption>{g.caption}</figcaption>
             </figure>
           ))}
           <div className="gallery__end display">
-            FOOD TASTES
+            {gallery.endText[0]}
             <br />
-            BETTER
+            {gallery.endText[1]}
             <br />
-            TOGETHER
+            {gallery.endText[2]}
           </div>
         </div>
       </div>

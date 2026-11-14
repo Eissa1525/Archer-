@@ -3,7 +3,16 @@ import { motion, useMotionValue, useTransform, animate } from 'motion/react'
 import { gsap, revealTitle, reducedMotion, useSectionAnim } from '../lib/anim'
 import { Icon } from '../lib/Icon'
 import { TornEdge } from '../lib/TornEdge'
-import { difference, reviews } from '../data'
+import { isDemo, site } from '../config'
+
+const { difference, reviews } = site
+
+/**
+ * Reviews are only shown when they are honest: sample reviews in demo mode (labelled as such),
+ * or reviews from a real, named source in client mode.
+ */
+export const showReviews =
+  reviews.items.length > 0 && !!reviews.source && (isDemo || !reviews.source.isSample)
 
 /** Pinned: the photo opens from a small circle to fill the frame while the features land around it. */
 export function Difference() {
@@ -42,7 +51,7 @@ export function Difference() {
             </span>
           ))}
         </h2>
-        <p className="section__lede">Street food done right, one order at a time.</p>
+        <p className="section__lede">{difference.lede}</p>
         <div className="diff__grid">
           <div className="diff__photo" data-cursor="Ooh">
             <img src={difference.photo.src} alt={difference.photo.alt} loading="lazy" />
@@ -87,9 +96,17 @@ export function Reviews() {
   return (
     <section ref={root} className="reviews section section--cream">
       <div className="reviews__head">
-        <h2 className="reviews__title display">LOVED LOUDLY</h2>
+        <h2 className="reviews__title display">{reviews.title}</h2>
         <div className="reviews__controls">
-          <span className="reviews__sample">Sample reviews · not real customers</span>
+          {reviews.source?.isSample ? (
+            <span className="reviews__sample">{site.demo.reviewsLabel}</span>
+          ) : reviews.source?.url ? (
+            <a className="reviews__sample" href={reviews.source.url} target="_blank" rel="noopener">
+              {reviews.source.label} ↗
+            </a>
+          ) : (
+            <span className="reviews__sample">{reviews.source?.label}</span>
+          )}
           <button className="round-btn" aria-label="Previous reviews" onClick={() => nudge(-1)}>
             <Icon name="left" />
           </button>
@@ -107,10 +124,10 @@ export function Reviews() {
           dragElastic={0.12}
           style={{ x, rotate: tilt }}
         >
-          {reviews.map((r, i) => (
+          {reviews.items.map((r, i) => (
             <article key={r.name} className={`review review--${i % 3}`}>
-              <div className="review__stars" aria-label="5 out of 5">
-                {[0, 1, 2, 3, 4].map((s) => (
+              <div className="review__stars" aria-label={`${r.rating ?? 5} out of 5`}>
+                {Array.from({ length: r.rating ?? 5 }, (_, s) => s).map((s) => (
                   <Icon key={s} name="star" size={16} />
                 ))}
               </div>

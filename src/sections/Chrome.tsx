@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion, useMotionValue, useSpring } from 'motion/react'
 import { gsap, reducedMotion } from '../lib/anim'
 import { Icon } from '../lib/Icon'
-import { brand } from '../data'
+import { site } from '../config'
+import { Logo } from '../lib/Logo'
 
 const NAV = [
   { label: 'About', href: '#about' },
@@ -55,7 +56,7 @@ export function Loader({ onDone }: { onDone: () => void }) {
       <div className="loader__half loader__half--bottom" />
       <div className="loader__center">
         <Icon name="flame" size={54} className="loader__flame" />
-        <p className="loader__brand">{brand.name}</p>
+        <p className="loader__brand">{site.business.name}</p>
         <p className="loader__count">
           <span ref={num}>0</span>%
         </p>
@@ -151,7 +152,7 @@ export function Header() {
     return () => window.removeEventListener('keydown', onKey)
   }, [open])
 
-  const ticker = [...brand.topbar, ...brand.topbar]
+  const ticker = [...site.topbar, ...site.topbar]
 
   return (
     <>
@@ -171,9 +172,8 @@ export function Header() {
           </div>
         </div>
         <div className="nav">
-          <a className="logo" href="#top" aria-label={`${brand.short} home`}>
-            <Icon name="flame" size={26} className="logo__flame" />
-            <span>{brand.name}</span>
+          <a className="logo" href="#top" aria-label={`${site.business.shortName} home`}>
+            <Logo size={26} />
           </a>
           <nav className="nav__pills" aria-label="Primary" onMouseLeave={() => setHover(null)}>
             {NAV.map((n) => (
@@ -228,7 +228,7 @@ export function Header() {
               </motion.a>
             ))}
             <motion.p className="sheet__foot" initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { delay: 0.6 } }}>
-              {brand.topbar[1]}
+              {site.contact.hoursSummary}
             </motion.p>
           </motion.div>
         )}

@@ -2,9 +2,11 @@ import { useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { gsap, revealTitle, useSectionAnim } from '../lib/anim'
 import { Icon } from '../lib/Icon'
-import { menu } from '../data'
+import { money, moneyShort, site } from '../config'
 
-const fmt = (n: number) => `$${n.toFixed(2)}`
+const menu = site.menu.categories
+const promo = site.menu.promo
+
 
 export function Menu() {
   const root = useRef<HTMLElement>(null)
@@ -33,9 +35,9 @@ export function Menu() {
   return (
     <section id="menu" ref={root} className="menu section section--brown">
       <div className="menu__head">
-        <h2 className="menu__title display">THE MENU</h2>
+        <h2 className="menu__title display">{site.menu.title}</h2>
         <p className="menu__rating">
-          <Icon name="star" size={16} /> Made to order, every time
+          <Icon name="star" size={16} /> {site.menu.note}
         </p>
       </div>
 
@@ -69,7 +71,7 @@ export function Menu() {
             >
               {current.items.map((it) => (
                 <motion.li
-                  key={it.name}
+                  key={it.id}
                   className="menu__item"
                   variants={{ hide: { opacity: 0, y: 24, rotateX: -50 }, show: { opacity: 1, y: 0, rotateX: 0, transition: { type: 'spring', stiffness: 260, damping: 22 } } }}
                   whileHover={{ x: 6 }}
@@ -77,23 +79,25 @@ export function Menu() {
                   <div className="menu__line">
                     <span className="menu__name">
                       {it.name}
-                      {it.hot && <Icon name="chili" size={15} className="menu__hot" />}
+                      {it.spicy && <Icon name="chili" size={15} className="menu__hot" />}
                     </span>
                     <span className="menu__dots" aria-hidden="true" />
-                    <span className="menu__price">{fmt(it.price)}</span>
+                    <span className="menu__price">{money(it.price)}</span>
                   </div>
-                  {it.note && <p className="menu__note">{it.note}</p>}
+                  {it.description && <p className="menu__note">{it.description}</p>}
                 </motion.li>
               ))}
             </motion.ul>
           </AnimatePresence>
 
-          <motion.aside className="menu__promo" whileHover={{ rotate: -3, scale: 1.04 }} data-cursor="Deal!">
-            <p className="menu__promo-kicker">All day, every day</p>
-            <p className="menu__promo-title display">ALLEY COMBO</p>
-            <p className="menu__promo-text">Any burger + fries + a drink</p>
-            <p className="menu__promo-price display">$15</p>
-          </motion.aside>
+          {promo && (
+            <motion.aside className="menu__promo" whileHover={{ rotate: -3, scale: 1.04 }} data-cursor="Deal!">
+              <p className="menu__promo-kicker">{promo.kicker}</p>
+              <p className="menu__promo-title display">{promo.title}</p>
+              <p className="menu__promo-text">{promo.text}</p>
+              <p className="menu__promo-price display">{moneyShort(promo.price)}</p>
+            </motion.aside>
+          )}
         </div>
       </div>
     </section>

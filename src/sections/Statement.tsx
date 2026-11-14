@@ -2,7 +2,9 @@ import { useRef } from 'react'
 import { gsap, ScrollTrigger, SplitText, reducedMotion, useSectionAnim } from '../lib/anim'
 import { Icon } from '../lib/Icon'
 import { TornEdge } from '../lib/TornEdge'
-import { marqueeRows } from '../data'
+import { site } from '../config'
+
+const marqueeRows = site.marquee
 
 /** "FLAVOR YOU CAN HEAR": letters inflate with the scroll, badges orbit the words. */
 export function Statement() {
@@ -31,15 +33,15 @@ export function Statement() {
     <section ref={root} className="statement section section--brown">
       <TornEdge color="var(--cream)" flip seed={5} />
       <h2 className="statement__title display">
-        FLAVOR YOU
+        {site.statement.lines[0]}
         <br />
-        CAN HEAR
+        {site.statement.lines[1]}
       </h2>
       <span className="statement__badge statement__badge--a"><Icon name="flame" size={28} /></span>
       <span className="statement__badge statement__badge--b"><Icon name="star" size={26} /></span>
       <span className="statement__badge statement__badge--c"><Icon name="chili" size={24} /></span>
       <span className="statement__badge statement__badge--d"><Icon name="heart" size={22} /></span>
-      <p className="statement__sub">The sizzle starts before the first bite.</p>
+      <p className="statement__sub">{site.statement.sub}</p>
     </section>
   )
 }

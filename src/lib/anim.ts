@@ -7,6 +7,9 @@ gsap.registerPlugin(ScrollTrigger, SplitText)
 
 export { gsap, ScrollTrigger, SplitText }
 
+/** The Lenis smooth-scroll instance (set in App), so overlays can pause page scrolling. */
+export const scroller: { lenis: { stop: () => void; start: () => void } | null } = { lenis: null }
+
 export const reducedMotion =
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 

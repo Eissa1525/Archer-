@@ -2,7 +2,9 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 import { gsap, reducedMotion, SplitText, useReady } from '../lib/anim'
 import { Icon } from '../lib/Icon'
 import { TornEdge } from '../lib/TornEdge'
-import { slides } from '../data'
+import { site } from '../config'
+
+const slides = site.hero.slides
 
 const AUTOPLAY_MS = 6500
 const STICKER_SLOTS = ['hero__sticker--a', 'hero__sticker--b', 'hero__sticker--c']
@@ -207,10 +209,10 @@ export function Hero() {
         </p>
         <div className="hero__ctas">
           <a className="btn btn--orange" href="#menu" data-cursor="Hungry?">
-            See the Menu
+            {site.hero.menuCta}
           </a>
           <a className="btn btn--cream" href="#contact" data-cursor="Let's go">
-            Find Us
+            {site.hero.findCta}
           </a>
         </div>
       </div>

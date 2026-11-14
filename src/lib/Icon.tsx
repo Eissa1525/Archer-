@@ -18,6 +18,18 @@ const paths: Record<string, string> = {
   arrow: 'M5 12h14M13 6l6 6-6 6',
   left: 'M15 5l-7 7 7 7',
   right: 'M9 5l7 7-7 7',
+  plus: 'M12 5v14M5 12h14',
+  minus: 'M5 12h14',
+  close: 'M6 6l12 12M18 6 6 18',
+  bag: 'M5 8h14l-1 12H6zM9 8V6a3 3 0 0 1 6 0v2',
+  check: 'M5 12.5l4.5 4.5L19 7',
+  alert: 'M12 3 2 20h20zM12 10v4M12 17.2v.1',
+  instagram: 'M4 4h16v16H4zM8 12a4 4 0 1 0 8 0 4 4 0 1 0-8 0M16.8 7.2v.1',
+  facebook: 'M14 8h3V4h-3a4 4 0 0 0-4 4v3H7v4h3v6h4v-6h3l1-4h-4V8z',
+  tiktok: 'M14 4c.4 2.6 2 4.2 5 4.5v3.4c-1.9 0-3.6-.6-5-1.7V16a5 5 0 1 1-5-5v3.4a1.7 1.7 0 1 0 1.6 1.6V4z',
+  x: 'M4 4l16 16M20 4 4 20',
+  youtube: 'M3 7.5C3 6 4 5 5.5 5h13C20 5 21 6 21 7.5v9c0 1.5-1 2.5-2.5 2.5h-13C4 19 3 18 3 16.5zM10 9v6l5-3z',
+  globe: 'M3 12a9 9 0 1 0 18 0 9 9 0 1 0-18 0M3 12h18M12 3c2.5 2.6 3.7 5.6 3.7 9s-1.2 6.4-3.7 9c-2.5-2.6-3.7-5.6-3.7-9S9.5 5.6 12 3',
 }
 const filled = new Set(['flame', 'chili', 'star', 'bolt', 'drop', 'moon', 'heart'])
 

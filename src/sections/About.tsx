@@ -2,7 +2,9 @@ import { useRef } from 'react'
 import { motion } from 'motion/react'
 import { gsap, revealTitle, revealUp, useSectionAnim } from '../lib/anim'
 import { Icon } from '../lib/Icon'
-import { about, specials } from '../data'
+import { moneyShort, site } from '../config'
+
+const { about, specials } = site
 
 export function About() {
   const root = useRef<HTMLElement>(null)
@@ -50,7 +52,7 @@ export function About() {
             <p key={t}>{t}</p>
           ))}
           <a className="btn btn--orange" href="#difference" data-cursor="Why us">
-            Taste the Difference
+            {about.cta}
           </a>
         </div>
       </div>
@@ -83,10 +85,10 @@ export function Specials() {
 
   return (
     <section ref={root} className="specials section section--cream">
-      <h2 className="specials__title display">STREET SPECIALS</h2>
-      <p className="section__lede">The ones regulars order without looking at the menu.</p>
+      <h2 className="specials__title display">{specials.title}</h2>
+      <p className="section__lede">{specials.lede}</p>
       <div className="specials__grid">
-        {specials.map((d) => (
+        {specials.dishes.map((d) => (
           <motion.article key={d.name} className="dish" whileHover="hover" data-cursor="Taste">
             <motion.div className="dish__plate-wrap" variants={{ hover: { y: -14, scale: 1.05 } }} transition={{ type: 'spring', stiffness: 260, damping: 16 }}>
               <div className="dish__plate">
@@ -97,9 +99,9 @@ export function Specials() {
                 variants={{ hover: { rotate: [0, -14, 10, -6, 0], scale: 1.15 } }}
                 transition={{ duration: 0.6 }}
               >
-                ${d.price % 1 ? d.price.toFixed(2) : d.price}
+                {moneyShort(d.price)}
               </motion.span>
-              {d.hot && (
+              {d.spicy && (
                 <span className="dish__hot" aria-label="Spicy">
                   <Icon name="chili" size={16} />
                 </span>
