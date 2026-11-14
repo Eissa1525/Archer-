@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
  * Fails (exit 1) if anything that looks like a real secret or a private env file is in the project.
- *   node scripts/scan-secrets.mjs            → every file git would ship (tracked + new, not ignored)
+ *   node scripts/scan-secrets.mjs            → every file git would ship (tracked + new, not ignored);
+ *                                              outside a git repository: every project file
  *   node scripts/scan-secrets.mjs <folder>   → every file in a folder (e.g. an extracted package or dist/)
  */
 import { execFileSync } from 'node:child_process'
@@ -21,11 +22,13 @@ const PATTERNS = [
 ]
 const FORBIDDEN_FILES = [/(^|\/)\.env(\.(?!example$)[^/]*)?$/, /(^|\/)\.dev\.vars$/, /\.pem$/, /\.p12$/]
 const BINARY = /\.(webp|png|jpe?g|gif|ico|woff2?|ttf|zip|pdf)$/i
+// build output and dependencies are not part of the source (they are re-created by npm)
+const SKIP_DIRS = new Set(['node_modules', '.git', 'dist', 'release'])
 
 function walk(dir, base = dir) {
   return readdirSync(dir).flatMap((name) => {
     const full = path.join(dir, name)
-    if (name === 'node_modules' || name === '.git') return []
+    if (SKIP_DIRS.has(name)) return []
     return statSync(full).isDirectory() ? walk(full, base) : [path.relative(base, full)]
   })
 }
@@ -50,9 +53,16 @@ export function scan(root, files) {
 
 const target = process.argv[2]
 const root = target ? path.resolve(target) : process.cwd()
-const files = target
-  ? walk(root)
-  : execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard'], { encoding: 'utf8' }).split('\n').filter(Boolean)
+function gitFiles() {
+  try {
+    return execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+      .split('\n')
+      .filter(Boolean)
+  } catch {
+    return null // not a git repository (e.g. an unzipped package)
+  }
+}
+const files = target ? walk(root) : (gitFiles() ?? walk(root))
 const findings = scan(root, files)
 if (findings.length) {
   console.error(`✗ Possible secrets found (${findings.length}):\n  ${findings.join('\n  ')}\n\nRemove them and rotate any real key that was exposed.`)
