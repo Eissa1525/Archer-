@@ -91,12 +91,12 @@ export function Menu() {
           </AnimatePresence>
 
           {promo && (
-            <motion.aside className="menu__promo" whileHover={{ rotate: -3, scale: 1.04 }} data-cursor="Deal!">
+            <motion.div className="menu__promo" whileHover={{ rotate: -3, scale: 1.04 }} data-cursor="Deal!">
               <p className="menu__promo-kicker">{promo.kicker}</p>
               <p className="menu__promo-title display">{promo.title}</p>
               <p className="menu__promo-text">{promo.text}</p>
               <p className="menu__promo-price display">{moneyShort(promo.price)}</p>
-            </motion.aside>
+            </motion.div>
           )}
         </div>
       </div>

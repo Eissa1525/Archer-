@@ -1,6 +1,6 @@
 import { useRef, type CSSProperties, type MouseEvent, type ReactNode } from 'react'
 import { motion, useMotionValue, useSpring } from 'motion/react'
-import { gsap, revealTitle, revealUp, reducedMotion, SplitText, useSectionAnim } from '../lib/anim'
+import { gsap, noTranslate, revealTitle, revealUp, reducedMotion, SplitText, useSectionAnim } from '../lib/anim'
 import { Icon } from '../lib/Icon'
 import { Logo } from '../lib/Logo'
 import { TornEdge } from '../lib/TornEdge'
@@ -190,6 +190,7 @@ function OrderButtons() {
 export function Order() {
   const root = useRef<HTMLElement>(null)
   useSectionAnim(root, () => {
+    noTranslate('.order__title')
     const split = SplitText.create('.order__title', { type: 'chars,words', charsClass: 'ch' })
     gsap.from(split.chars, {
       yPercent: 120,
@@ -264,7 +265,7 @@ export function Contact() {
     <section id="contact" ref={root} className="contact section section--brown">
       <TornEdge color="var(--cream)" flip seed={41} />
       <div className="contact__inner">
-        <div className="contact__visual">
+        <div className="contact__visual" translate="no">
           <div className="contact__photo">
             <img src={contactSection.photo.src} alt={contactSection.photo.alt} loading="lazy" />
           </div>
@@ -354,6 +355,7 @@ export function Contact() {
 export function Footer() {
   const root = useRef<HTMLElement>(null)
   useSectionAnim(root, () => {
+    noTranslate('.footer__giant')
     const split = SplitText.create('.footer__giant', { type: 'chars', charsClass: 'ch' })
     gsap.from(split.chars, {
       yPercent: 100,

@@ -102,7 +102,7 @@ export function Specials() {
                 {moneyShort(d.price)}
               </motion.span>
               {d.spicy && (
-                <span className="dish__hot" aria-label="Spicy">
+                <span className="dish__hot" role="img" aria-label="Spicy">
                   <Icon name="chili" size={16} />
                 </span>
               )}

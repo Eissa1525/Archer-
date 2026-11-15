@@ -77,6 +77,12 @@ and Lenis for smooth scrolling (driven by GSAP's ticker, so ScrollTrigger stays 
 - A grid item that holds a `max-content` marquee track must be allowed to shrink
   (`minmax(0, 1fr)`). Otherwise it grows to the full track width, and any `rotate` pivots far
   off-screen (the marquee stripe used to land on the third row).
+- Page translators (Chrome Translate) replace text nodes. Text that changes or appears
+  conditionally must be the only child of its element (`<span>{x}</span>` or a template string),
+  never a bare text node next to other children, or React crashes the whole page. `main.tsx` also
+  patches `removeChild`/`insertBefore` as a safety net. Letter-split headings get `translate="no"`.
+- The hosted demo (Cloudflare Pages `CF_PAGES=1` / Workers Builds `WORKERS_CI=1`) builds the
+  showcase config and `demo-assets/public` automatically; the sold package has no `demo-assets/`.
 - The order panel stops Lenis while it's open (`scroller.lenis`) and its body has
   `data-lenis-prevent`.
 

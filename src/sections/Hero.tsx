@@ -81,14 +81,14 @@ export function Hero() {
 
   /* ---------- OUT then change slide ---------- */
   const go = useCallback(
-    (step: 1 | -1) => {
+    (step: 1 | -1, to?: number) => {
       if (busy.current || !root.current) return
       busy.current = true
       dir.current = step
       const q = gsap.utils.selector(root)
       const d = reducedMotion ? 0.01 : 1
       gsap
-        .timeline({ onComplete: () => setIndex((i) => (i + step + slides.length) % slides.length) })
+        .timeline({ onComplete: () => setIndex((i) => to ?? (i + step + slides.length) % slides.length) })
         .to(q('.hero__ch'), { rotateX: 95, yPercent: -50, autoAlpha: 0, transformOrigin: '50% 0%', duration: 0.4 * d, ease: 'power2.in', stagger: { each: 0.018, from: step > 0 ? 'start' : 'end' } })
         .to(q('.hero__plate'), { xPercent: -130 * step, rotate: -200 * step, scale: 0.7, duration: 0.6 * d, ease: 'power3.in' }, 0)
         .to(q('.hero__sticker, .hero__badge'), { scale: 0, duration: 0.25 * d, stagger: 0.04 }, 0)
@@ -164,7 +164,7 @@ export function Hero() {
       }}
     >
       <div className="hero__stage">
-        <h1 className="hero__title" aria-label={`${slide.lines.join(' ')}. ${slide.tagline}`}>
+        <h1 className="hero__title" translate="no" aria-label={`${slide.lines.join(' ')}. ${slide.tagline}`}>
           {/* keyed by slide: SplitText replaces text nodes React would otherwise try to update */}
           <span key={`l1-${index}`} className="hero__line hero__line--1" aria-hidden="true">
             {slide.lines[0]}
@@ -231,7 +231,7 @@ export function Hero() {
             aria-selected={i === index}
             aria-label={s.lines.join(' ')}
             className={`hero__dot ${i === index ? 'is-active' : ''}`}
-            onClick={() => i !== index && go(i > index ? 1 : -1)}
+            onClick={() => i !== index && go(i > index ? 1 : -1, i)}
           >
             {i === index && !paused && !reducedMotion && <span className="hero__dot-fill" style={{ animationDuration: `${AUTOPLAY_MS}ms` }} />}
           </button>

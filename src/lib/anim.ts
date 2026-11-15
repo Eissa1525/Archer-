@@ -36,7 +36,14 @@ export function useSectionAnim(scope: RefObject<HTMLElement | null>, setup: () =
 }
 
 /** Standard "title explodes in" for big display headings. */
+/**
+ * Headings that are split into letters keep their original language: a page translator would
+ * otherwise translate them one letter at a time.
+ */
+export const noTranslate = (target: string | Element) => gsap.utils.toArray<HTMLElement>(target).forEach((el) => el.setAttribute('translate', 'no'))
+
 export function revealTitle(target: string | Element, trigger?: Element | string) {
+  noTranslate(target)
   const split = SplitText.create(target, { type: 'chars,words', charsClass: 'ch' })
   gsap.from(split.chars, {
     yPercent: 110,

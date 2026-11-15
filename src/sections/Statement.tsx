@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { gsap, ScrollTrigger, SplitText, reducedMotion, useSectionAnim } from '../lib/anim'
+import { gsap, noTranslate, ScrollTrigger, SplitText, reducedMotion, useSectionAnim } from '../lib/anim'
 import { Icon } from '../lib/Icon'
 import { TornEdge } from '../lib/TornEdge'
 import { site } from '../config'
@@ -11,6 +11,7 @@ export function Statement() {
   const root = useRef<HTMLElement>(null)
 
   useSectionAnim(root, () => {
+    noTranslate('.statement__title')
     const split = SplitText.create('.statement__title', { type: 'chars,words', charsClass: 'ch' })
     gsap
       .timeline({ scrollTrigger: { trigger: root.current, start: 'top 80%', end: 'center 45%', scrub: 0.7 } })

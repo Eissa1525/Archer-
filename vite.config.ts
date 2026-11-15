@@ -2,15 +2,23 @@
 import { defineConfig, runnerImport, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'node:path'
+import { existsSync } from 'node:fs'
 import type { SiteConfig } from './src/config/types.ts'
 import { validateConfig } from './src/config/validate.ts'
 import { faviconHref, themeCss } from './src/config/theme.ts'
 
 /**
+ * The template author's public showcase: the hosted demo build (Cloudflare Pages / Workers Builds)
+ * uses the showcase config and demo photos in demo-assets/. That folder is not part of the sold
+ * package, so this is always off in a customer's copy.
+ */
+const showcase = (process.env.CF_PAGES === '1' || process.env.WORKERS_CI === '1') && existsSync('demo-assets/showcase.config.ts')
+
+/**
  * Which restaurant to build. Defaults to the Fire Alley demo.
  *   SITE_CONFIG=clients/acme.config.ts npm run build
  */
-const configFile = path.resolve(process.env.SITE_CONFIG ?? 'src/config/site.config.ts')
+const configFile = path.resolve(process.env.SITE_CONFIG || (showcase ? 'demo-assets/showcase.config.ts' : 'src/config/site.config.ts'))
 
 const escape = (s: string) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;')
 
@@ -57,8 +65,8 @@ function fillHead(html: string, site: SiteConfig): string {
 
 export default defineConfig({
   base: './',
-  // static files (images…). PUBLIC_DIR lets the internal showcase build use licensed demo photos.
-  publicDir: process.env.PUBLIC_DIR ?? 'public',
+  // static files (images…). PUBLIC_DIR selects another folder.
+  publicDir: process.env.PUBLIC_DIR || (showcase && configFile === path.resolve('demo-assets/showcase.config.ts') ? 'demo-assets/public' : 'public'),
   plugins: [restaurantConfig(), react()],
   resolve: { alias: { '@site-config': configFile } },
   build: { target: 'es2022', chunkSizeWarningLimit: 700 },

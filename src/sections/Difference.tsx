@@ -126,7 +126,7 @@ export function Reviews() {
         >
           {reviews.items.map((r, i) => (
             <article key={r.name} className={`review review--${i % 3}`}>
-              <div className="review__stars" aria-label={`${r.rating ?? 5} out of 5`}>
+              <div className="review__stars" role="img" aria-label={`${r.rating ?? 5} out of 5`}>
                 {Array.from({ length: r.rating ?? 5 }, (_, s) => s).map((s) => (
                   <Icon key={s} name="star" size={16} />
                 ))}

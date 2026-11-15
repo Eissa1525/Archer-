@@ -8,6 +8,10 @@ import { useOrder, hasCart } from './store'
 import { defaultSelection, describeSelection, findItem, groupsFor, selectionErrors, unitPriceCents, fromCents, type Selection } from './pricing'
 import { buildPayload, emptyForm, resolvePaymentReturn, submitOrder, validateCustomer, type CustomerForm, type FormErrors, type PaymentReturn, type SubmitResult } from './checkout'
 
+// Page translators (Chrome's Translate, some extensions) replace text nodes with their own elements.
+// React then cannot update or remove that text, so any text that changes or appears conditionally
+// is the ONLY child of its own element (a <span> or a template string), never a bare text node
+// next to other children.
 type Step = 'menu' | 'cart' | 'details' | 'done'
 type Done = Exclude<SubmitResult, { kind: 'error' } | { kind: 'redirect' }> | PaymentReturn | { kind: 'checking' }
 
@@ -158,7 +162,7 @@ export function OrderPanel() {
             exit={{ y: 40, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 260, damping: 26 }}
           >
-            <header className="op__head">
+            <div className="op__head">
               <h2 id="op-title" ref={heading} tabIndex={-1} className="op__title display">
                 {step === 'done' ? 'Order status' : 'Your order'}
               </h2>
@@ -166,7 +170,7 @@ export function OrderPanel() {
               <button type="button" className="round-btn op__close" aria-label="Close order" onClick={close}>
                 <Icon name="close" size={18} />
               </button>
-            </header>
+            </div>
 
             {demoOrdering && step !== 'done' && (
               <p className="op__demo" role="note">
@@ -247,7 +251,7 @@ function Steps({ step, onStep }: { step: Step; onStep: (s: Step) => void }) {
           disabled={i > idx || (s !== 'menu' && totals.itemCount === 0)}
           onClick={() => onStep(s)}
         >
-          <span className="op__step-n">{i + 1}</span> {label}
+          <span className="op__step-n">{i + 1}</span> <span>{label}</span>
         </button>
       ))}
     </nav>
@@ -304,7 +308,8 @@ function MenuStep() {
           </button>
         ))}
       </div>
-      <ul id="op-items" role="tabpanel" aria-labelledby={`op-tab-${cat.id}`} className="op__items">
+      <div id="op-items" role="tabpanel" aria-labelledby={`op-tab-${cat.id}`}>
+      <ul className="op__items">
         {cat.items.map((it) => (
           <li key={it.id} className="op__item">
             <div className="op__item-text">
@@ -321,10 +326,12 @@ function MenuStep() {
           </li>
         ))}
       </ul>
+      </div>
       <p className="op__toast" role="status" aria-live="polite">
         {toast && (
           <>
-            <Icon name="check" size={16} /> {toast}
+            <Icon name="check" size={16} />
+            <span>{toast}</span>
           </>
         )}
       </p>
@@ -415,7 +422,7 @@ function Customize({ item, onCancel, onAdded }: { item: MenuItem; onCancel: () =
       <div className="op__custom-foot">
         <Qty value={qty} onChange={setQty} label={item.name} />
         <button type="button" className="btn btn--orange" onClick={submit}>
-          Add to order · {money(price)}
+          {`Add to order · ${money(price)}`}
         </button>
       </div>
     </form>
@@ -504,7 +511,7 @@ function CartStep({ onBrowse }: { onBrowse: () => void }) {
       <div className="op__info">
         {est && (
           <p>
-            <Icon name="clock" size={16} /> {fulfillment === 'delivery' ? 'Delivery' : 'Pickup'} in about {est}
+            <Icon name="clock" size={16} /> <span>{`${fulfillment === 'delivery' ? 'Delivery' : 'Pickup'} in about ${est}`}</span>
           </p>
         )}
         {fulfillment === 'delivery' && ord.delivery.area && (
@@ -519,7 +526,7 @@ function CartStep({ onBrowse }: { onBrowse: () => void }) {
         )}
         {totals.belowMinimumBy > 0 && (
           <p className="op__warn" role="status">
-            Add {money(totals.belowMinimumBy)} more to reach the {money(ord.delivery.minimumOrder ?? 0)} delivery minimum.
+            {`Add ${money(totals.belowMinimumBy)} more to reach the ${money(ord.delivery.minimumOrder ?? 0)} delivery minimum.`}
           </p>
         )}
       </div>
@@ -532,15 +539,15 @@ function FooterBar({ step, onNext }: { step: Step; onNext: () => void }) {
   const { totals } = useOrder()
   const blocked = totals.itemCount === 0 || (step === 'cart' && totals.belowMinimumBy > 0)
   return (
-    <footer className="op__foot">
+    <div className="op__foot">
       <p className="op__foot-sum">
-        <span>{totals.itemCount} {totals.itemCount === 1 ? 'item' : 'items'}</span>
+        <span>{`${totals.itemCount} ${totals.itemCount === 1 ? 'item' : 'items'}`}</span>
         <strong>{money(totals.subtotal)}</strong>
       </p>
       <button type="button" className="btn btn--orange" disabled={blocked} onClick={onNext}>
-        {step === 'menu' ? 'Review order' : 'Checkout'} <Icon name="arrow" size={18} />
+        <span>{step === 'menu' ? 'Review order' : 'Checkout'}</span> <Icon name="arrow" size={18} />
       </button>
-    </footer>
+    </div>
   )
 }
 
@@ -636,7 +643,7 @@ function DetailsStep({ onDone }: { onDone: (d: Done) => void }) {
       {failure && (
         <div className="op__error" role="alert">
           <p>
-            <Icon name="alert" size={16} /> {failure}
+            <Icon name="alert" size={16} /> <span>{failure}</span>
           </p>
           <p>
             Prefer to order by phone? <a href={telHref}>{site.contact.phoneDisplay}</a>
