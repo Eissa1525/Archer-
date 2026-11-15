@@ -1,7 +1,5 @@
 # AETHER Restaurant Website Template: Single Website Commercial Licence
 
-> **DRAFT FOR REVIEW. NOT LEGAL ADVICE.** This text has not yet been reviewed by a lawyer.
-
 **Licensor:** Eissa ALDALI ("we", "us")
 **Product:** AETHER Restaurant Website Template, version 1.x, including its source code, design,
 documentation and placeholder images (the "Template")

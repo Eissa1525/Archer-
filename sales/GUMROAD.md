@@ -59,8 +59,8 @@ or changes after delivery.
 
 ## Before publishing the listing
 - [x] Licensor details filled in `LICENSE.md` (Eissa ALDALI, Ontario, 2026).
-- [ ] Have `LICENSE.md` reviewed, remove the DRAFT notice, then run `npm run package` again (no
-      warning at the end).
+- [x] Licence terms approved by the licensor (2026-11-15). Not reviewed by a lawyer; the licensor
+      accepted that risk. DRAFT notice removed; `npm run package` gives no warning.
 - [ ] Replace `[PUBLIC DEMO URL]` with the public demo link.
 - [ ] Check Gumroad's current fees. On a $10 add-on, platform and payment fees take a noticeable
       share.
