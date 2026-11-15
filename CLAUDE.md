@@ -83,6 +83,9 @@ and Lenis for smooth scrolling (driven by GSAP's ticker, so ScrollTrigger stays 
   patches `removeChild`/`insertBefore` as a safety net. Letter-split headings get `translate="no"`.
 - The hosted demo (Cloudflare Pages `CF_PAGES=1` / Workers Builds `WORKERS_CI=1`) builds the
   showcase config and `demo-assets/public` automatically; the sold package has no `demo-assets/`.
+- The order panel's card and backdrop keep `will-change` for their whole (short) life. Without it,
+  Chrome drops their layers when the open animation ends and repaints both into one new layer; slow
+  Android GPUs show that as the panel vanishing for ~4 frames. A portal does not help (tested).
 - The order panel stops Lenis while it's open (`scroller.lenis`) and its body has
   `data-lenis-prevent`.
 

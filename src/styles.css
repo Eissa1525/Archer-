@@ -1884,6 +1884,8 @@ button {
   background: rgba(42, 12, 0, 0.78);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
+  /* keep its own compositor layer for as long as the panel is open (see .op__card) */
+  will-change: opacity;
 }
 .op__card {
   position: relative;
@@ -1896,6 +1898,10 @@ button {
   border-radius: 32px;
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
   overflow: hidden;
+  /* Without this, Chrome drops the card's layer when the slide-up ends and repaints the card and the
+     backdrop into one new layer. Slow Android GPUs show that repaint as the panel vanishing for a few
+     frames. Both elements only exist while the panel is open. */
+  will-change: transform;
 }
 .op__head {
   display: flex;
