@@ -53,6 +53,9 @@ export function CartButton() {
 /* ------------------------------------------------------------------ */
 /* Panel                                                              */
 /* ------------------------------------------------------------------ */
+/** Distance that puts the card just below the bottom of the screen. */
+const offscreen = () => (typeof window === 'undefined' ? 900 : window.innerHeight)
+
 export function OrderPanel() {
   const o = useOrder()
   const [step, setStep] = useState<Step>('menu')
@@ -148,8 +151,18 @@ export function OrderPanel() {
   return (
     <AnimatePresence>
       {o.isOpen && (
-        <motion.div className="op" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}>
-          <div className="op__backdrop" onClick={close} aria-hidden="true" />
+        // The card is never faded: a see-through card let the page bleed through it while opening.
+        // It slides up from below the screen fully opaque; only the backdrop fades.
+        <motion.div className="op">
+          <motion.div
+            className="op__backdrop"
+            onClick={close}
+            aria-hidden="true"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+          />
           <motion.div
             ref={panel}
             className="op__card"
@@ -157,10 +170,11 @@ export function OrderPanel() {
             aria-modal="true"
             aria-labelledby="op-title"
             onKeyDown={onKeyDown}
-            initial={{ y: 60, opacity: 0, rotate: -1.5 }}
-            animate={{ y: 0, opacity: 1, rotate: 0 }}
-            exit={{ y: 40, opacity: 0 }}
-            transition={{ type: 'spring', stiffness: 260, damping: 26 }}
+            initial={{ y: offscreen(), rotate: -1.5 }}
+            animate={{ y: 0, rotate: 0 }}
+            exit={{ y: offscreen(), rotate: 0, transition: { duration: 0.3, ease: [0.5, 0, 0.75, 0] } }}
+            // critically damped: an overshoot would lift the bottom sheet off the screen edge
+            transition={{ type: 'spring', stiffness: 260, damping: 34 }}
           >
             <div className="op__head">
               <h2 id="op-title" ref={heading} tabIndex={-1} className="op__title display">
